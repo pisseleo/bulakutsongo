@@ -1,0 +1,14 @@
+Sistema de conversas e interacoes em chat, 
+ o sistema deve permitir criar conta de utilizador para fazer parte do chat group, 
+ receber notificacoes de mensagens individuais assim como de grupo, 
+ enviar e receber mensagens partilhar medias como ficheiros(documentos, fotos e videos)
+ enviar mensagem de voz.
+ 
+ o utilizador deve criar conta com email, password, nome completo;
+ 
+a authenticacao tem que ser via 2fa, verificacao da conta valida para iniciar as conversas.
+as iteracoes devem ser em tempo real; alterar a cor da mensagem assim que for lida.
+
+criar uma proposta de base de dados para efetividade da aplicacao,
+as tecnologias ideais para desenvolver o aplicacao
+ 
