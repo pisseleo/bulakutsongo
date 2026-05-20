@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                       String               @id @default(uuid())
+  email                    String               @unique
+  full_name                String
+  password                 String
+  is_2fa_enabled           Boolean              @default(false)
+  created_at               DateTime             @default(now())
+  passwordResetTokenExpiry DateTime?
+  phone                    String?
+  profile_picture_url      String?
+  status                   String? // 'online', 'offline', 'away'
+  last_seen                DateTime?
+  roles                    Role[]               @relation("RoleToUser")
+  // Relações
+  sent_messages            Message[]
+  conversationMember            ConversationMember[]
+  twofa                    User2FA?
+  sessions                 Session[]
+  conversations            Conversation[]
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  permissions Permission[] @relation("PermissionToRole")
+  users       User[]       @relation("RoleToUser")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  roles       Role[]  @relation("PermissionToRole")
+}
+
+model Session {
+  id           String    @id @default(uuid())
+  userId       String
+  token        String
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id])
+}
+
+model User2FA {
+  user_id      String   @id
+  secret       String
+  backup_codes String[] // array de códigos de backup
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id         String   @id @default(uuid())
+  name       String? // null para conversas diretas (1-1)
+  is_group   Boolean  @default(false)
+  created_by String
+  created_at DateTime @default(now())
+
+  // Relações
+  creator  User                 @relation(fields: [created_by], references: [id], onDelete: SetNull)
+  members  ConversationMember[]
+  messages Message[]
+}
+
+model ConversationMember {
+  conversation_id String
+  user_id         String
+  joined_at       DateTime @default(now())
+
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@id([conversation_id, user_id])
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  conversation_id String
+  sender_id       String
+  content         String? // texto opcional
+  media_url       String? // URL do Firebase Storage
+  media_type      String? // 'image', 'video', 'document', 'voice'
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relações
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [sender_id], references: [id], onDelete: SetNull)
+}

@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: chatpeople-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: chatpeople
+      POSTGRES_USER: xtremedev
+      POSTGRES_PASSWORD: Yan%40jan2019
+    volumes:
+      - chatpeople-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - chatpeople-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xtremedev -d chatpeople"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (para WebSocket adapter, cache e estado online)
+  redis:
+    image: redis:7-alpine
+    container_name: chatpeople-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - chatpeople-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Node.js (backend)
+  api:
+    build:
+      context: ./chat-api          # diretório onde está o código da API
+      dockerfile: Dockerfile      # assume que existe um Dockerfile
+    container_name: chatpeople-api
+    restart: always
+    ports:
+      - "4000:4000"               # API REST e WebSocket na porta 4000
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: "postgresql://xtremedev:Yan%40jan2019@postgres:5432/chatpeople?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "i2Dn7gHRIf17Xbcag6U7FlyGrzHzmEFve4ELUc6NNog47OCOGo0fQrzZle8EYQEe8dSvrC4Y8KMD7XrVqV97iCK8IUPgxFtRzFDBgjtsTafQOtfZlFjWje0s48dvTzbqj"
+      FRONTEND_URL: "http://localhost:3000"   # ou o endereço do frontend
+      # Firebase Admin SDK (opcional, pode ser passado via ficheiro ou variáveis)
+      FIREBASE_PROJECT_ID: "seu-project-id"
+      FIREBASE_CLIENT_EMAIL: "firebase-adminsdk@..."
+      FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chatpeople-network
+    volumes:
+      - ./chat-api/uploads:/app/uploads   # se houver uploads locais (opcional)
+      - ./chat-api/serviceAccountKey.json:/app/serviceAccountKey.json:ro  # se usar ficheiro de chave Firebase
+
+  # (Opcional) Frontend Next.js – descomente se quiser incluir
+  frontend:
+    build:
+      context: ./main-app
+      dockerfile: Dockerfile
+    container_name: chatpeople-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:4000/api"
+      NEXT_PUBLIC_WS_URL: "http://localhost:4000"
+      NEXT_PUBLIC_FIREBASE_API_KEY: "xxx"
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: "xxx"
+    depends_on:
+      - api
+    networks:
+      - chatpeople-network
+
+networks:
+  chatpeople-network:
+    driver: bridge
+
+volumes:
+  chatpeople-data:
+    name: chatpeople-postgres-data
+  redis-data:
+    name: chatpeople-redis-data
