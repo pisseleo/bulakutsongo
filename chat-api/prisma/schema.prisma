@@ -91,13 +91,21 @@ model ConversationMember {
   @@id([conversation_id, user_id])
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  // add other types as needed
+}
+
 model Message {
   id              String   @id @default(uuid())
   conversation_id String
   sender_id       String
   content         String? // texto opcional
   media_url       String? // URL do Firebase Storage
-  media_type      String? // 'image', 'video', 'document', 'voice'
+  media_type      MediaType? // 'image', 'video', 'document', 'voice'
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
