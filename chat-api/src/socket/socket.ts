@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
-import prisma from '../config/prisma';
+import prisma from '../configs/prisma';
 import {
   markOnline,
   markSocketDisconnected,
@@ -10,9 +10,9 @@ import {
 import {
   broadcastPresenceChange,
 } from '../services/notification.service';
-import { setTypingIndicator } from '../config/firebase';
+import { setTypingIndicator } from '../configs/firebase';
 import { AccessTokenPayload, SocketUserData, TypingPayload, ReadReceiptPayload } from '../types';
-import { logger } from '../config/logger';
+import { logger } from '../configs/logger';
 
 let io: Server;
 

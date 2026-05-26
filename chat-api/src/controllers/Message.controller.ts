@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { MediaType } from '@prisma/client';
 import prisma from '../configs/prisma';
 import { getCache, setCache } from '../configs/redis';
 import { writeMessageToFirestore, uploadToStorage } from '../configs/firebase';
@@ -8,6 +7,7 @@ import { notifyNewMessage } from '../services/notification.service';
 import { AppError } from '../middleware/error.middleware';
 import { AuthenticatedRequest, PaginationMeta } from '../types';
 import { v4 as uuid } from 'uuid';
+import { MediaType } from '@/generated/prisma';
 
 // ── Send a message ────────────────────────────────────────────────────────────
 export async function sendMessage(req: Request, res: Response): Promise<void> {

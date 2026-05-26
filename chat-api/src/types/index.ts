@@ -1,9 +1,10 @@
+import { User } from '@/generated/prisma';
 import { Request } from 'express';
-import { User } from '@prisma/client';
+
 
 // ── Augmented Express types ────────────────────────────────────────────────────
 export interface AuthenticatedRequest extends Request {
-  user: Pick<User, 'id' | 'email' | 'full_name' | 'status' | 'is_verified'>;
+  user: Pick<User, 'id' | 'email' | 'full_name' | 'status'>;
   token: string;
 }
 

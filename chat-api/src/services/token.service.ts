@@ -1,14 +1,16 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
-import { User } from '@prisma/client';
+import { StringValue } from 'ms';
+
 import prisma from '../configs/prisma';
 import { setCache, getCache } from '../configs/redis';
 import { AccessTokenPayload, RefreshTokenPayload } from '../types';
+import { User } from '@/generated/prisma';
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '15m';
-const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '7d';
+const ACCESS_EXPIRES = (process.env.JWT_ACCESS_EXPIRES || '15m') as StringValue;
+const REFRESH_EXPIRES = (process.env.JWT_REFRESH_EXPIRES || '7d') as StringValue;
 const REFRESH_EXPIRES_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export interface TokenPair {
@@ -26,16 +28,19 @@ export async function issueTokenPair(
 ): Promise<TokenPair> {
   const jti = uuid();
 
+  const accessOptions: SignOptions = { expiresIn: ACCESS_EXPIRES };
+  const refreshOptions: SignOptions = { expiresIn: REFRESH_EXPIRES };
+
   const accessToken = jwt.sign(
-    { sub: user.id, email: user.email, jti } satisfies Omit<AccessTokenPayload, 'iat' | 'exp'>,
+    { sub: user.id, email: user.email, jti } as AccessTokenPayload,
     ACCESS_SECRET,
-    { expiresIn: ACCESS_EXPIRES },
+    accessOptions,
   );
 
   const refreshToken = jwt.sign(
-    { sub: user.id, jti } satisfies Omit<RefreshTokenPayload, 'iat' | 'exp'>,
+    { sub: user.id, jti } as RefreshTokenPayload,
     REFRESH_SECRET,
-    { expiresIn: REFRESH_EXPIRES },
+    refreshOptions,
   );
 
   const expiresAt = new Date(Date.now() + REFRESH_EXPIRES_SECONDS * 1000);
@@ -51,7 +56,24 @@ export async function issueTokenPair(
     },
   });
 
-  return { accessToken, refreshToken, expiresIn: 900 };
+  // Access token expiry in seconds (parse from string like '15m')
+  const accessExpirySeconds = parseDurationToSeconds(ACCESS_EXPIRES);
+  return { accessToken, refreshToken, expiresIn: accessExpirySeconds };
+}
+
+/**
+ * Parse duration string (e.g., '15m', '1h', '2d') to seconds.
+ */
+function parseDurationToSeconds(duration: string): number {
+  const unit = duration.slice(-1);
+  const value = parseInt(duration.slice(0, -1), 10);
+  switch (unit) {
+    case 's': return value;
+    case 'm': return value * 60;
+    case 'h': return value * 3600;
+    case 'd': return value * 86400;
+    default: return 900; // default 15 min
+  }
 }
 
 /**
@@ -117,6 +139,6 @@ export async function revokeAllSessions(userId: string): Promise<void> {
     where: { user_id: userId },
     select: { access_token: true },
   });
-  await Promise.all(sessions.map((s) => blacklistToken(s.access_token)));
+  await Promise.all(sessions.map((s: any) => blacklistToken(s.access_token)));
   await prisma.session.deleteMany({ where: { user_id: userId } });
 }

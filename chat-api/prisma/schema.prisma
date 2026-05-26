@@ -4,7 +4,7 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -13,6 +13,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum NotificationType {
+  NEW_MESSAGE
+  MENTION
+  GROUP_CREATED
+  GROUP_INVITE
+  MEMBER_JOINED
+}
+
+model Notification {
+  id         String         @id @default(uuid())
+  user_id    String
+  type       NotificationType
+  title      String
+  body       String
+  data       Json   // para metadados adicionais
+  read       Boolean        @default(false)
+  created_at DateTime       @default(now())
+  user       User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
 model User {
   id                       String               @id @default(uuid())
   email                    String               @unique
@@ -25,6 +44,7 @@ model User {
   profile_picture_url      String?
   status                   String? // 'online', 'offline', 'away'
   last_seen                DateTime?
+  fcm_tokens       String[] 
   roles                    Role[]               @relation("RoleToUser")
   // Relações
   sent_messages            Message[]
@@ -32,6 +52,7 @@ model User {
   twofa                    User2FA?
   sessions                 Session[]
   conversations            Conversation[]
+  notifications              Notification[]
 }
 
 model Role {
@@ -50,14 +71,15 @@ model Permission {
 }
 
 model Session {
-  id           String    @id @default(uuid())
-  userId       String
-  token        String
-  refreshToken String
-  expiresAt    DateTime
-  createdAt    DateTime? @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User      @relation(fields: [userId], references: [id])
+  id            String   @id @default(uuid())
+  user_id       String
+  access_token  String   @unique   // antes token
+  refresh_token String   @unique   // antes refreshToken
+  expires_at    DateTime           // antes expiresAt
+  device_info   String?
+  ip_address    String?
+  created_at    DateTime @default(now())
+  user          User     @relation(fields: [user_id], references: [id])
 }
 
 model User2FA {
@@ -108,7 +130,7 @@ model Message {
   media_type      MediaType? // 'image', 'video', 'document', 'voice'
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
-
+is_deleted   Boolean  @default(false)
   // Relações
   conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   sender       User         @relation(fields: [sender_id], references: [id], onDelete: SetNull)

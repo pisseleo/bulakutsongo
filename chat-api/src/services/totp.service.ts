@@ -130,7 +130,7 @@ export async function useBackupCode(
   const idx = twofa.backup_codes.indexOf(normalised);
   if (idx === -1) throw new AppError('Invalid backup code.', 401);
 
-  const remaining = twofa.backup_codes.filter((_, i) => i !== idx);
+  const remaining = twofa.backup_codes.filter((_: any, i: any) => i !== idx);
   await prisma.user2FA.update({
     where: { user_id: userId },
     data: { backup_codes: remaining },

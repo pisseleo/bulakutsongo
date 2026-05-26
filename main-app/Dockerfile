@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Copiar dependências
 COPY package*.json ./
+COPY yarn.lock ./
 RUN npm ci
 
 # Copiar código fonte

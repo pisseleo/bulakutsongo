@@ -42,4 +42,5 @@ export const expireCache = async (key: string, ttlSeconds: number): Promise<void
   await redis.expire(key, ttlSeconds);
 };
 
-export default redis;
+// redis.ts (adicionar no final)
+export const redisClient = redis;

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -8,8 +8,7 @@ import userRoutes from './routes/user.routes';
 import conversationRoutes from './routes/conversation.routes';
 import messageRoutes from './routes/message.routes';
 import uploadRoutes from './routes/upload.routes';
-import { errorHandler } from './middlewares/error.middleware';
-import { notFound } from './common/helpers';
+import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
 
@@ -29,10 +28,10 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Health check
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/health', (res: Response) => res.json({ status: 'ok' }));
 
 // 404
-app.use(notFound);
+// app.use(notFound);
 
 // Error handler
 app.use(errorHandler);

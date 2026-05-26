@@ -1,9 +1,10 @@
-import { NotificationType } from '@prisma/client';
-import prisma from '../config/prisma';
-import { sendMulticastPush, PushPayload } from '../config/firebase';
+
+import prisma from '../configs/prisma';
+import { sendMulticastPush, PushPayload } from '../configs/firebase';
 import { isOnline } from './presence.service';
 import { getSocketServer } from '../socket/socket';
-import { logger } from '../config/logger';
+import { logger } from '../configs/logger';
+import { NotificationType } from '@/generated/prisma';
 
 interface CreateNotificationInput {
   userId: string;
@@ -78,7 +79,7 @@ export async function notifyNewMessage(
   });
 
   await Promise.allSettled(
-    members.map((m) =>
+    members.map((m: any) =>
       createAndDeliverNotification({
         userId: m.user_id,
         type: 'NEW_MESSAGE',
@@ -132,6 +133,6 @@ export async function removeFcmToken(userId: string, token: string): Promise<voi
 
   await prisma.user.update({
     where: { id: userId },
-    data: { fcm_tokens: user.fcm_tokens.filter((t) => t !== token) },
+    data: { fcm_tokens: user.fcm_tokens.filter((t: any) => t !== token) },
   });
 }

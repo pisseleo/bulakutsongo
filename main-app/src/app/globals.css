@@ -1,26 +1,153 @@
 @import "tailwindcss";
 
+/* @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap'); */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-primary: #0f1117;
+  --bg-secondary: #161b27;
+  --bg-tertiary: #1e2535;
+  --bg-hover: #252d3f;
+  --border: #2a3347;
+  --text-primary: #e8edf5;
+  --text-secondary: #8896b3;
+  --text-muted: #4d5b77;
+  --accent: #3b6ff7;
+  --accent-hover: #5c93ff;
+  --accent-dim: rgba(59, 111, 247, 0.15);
+  --online: #22c55e;
+  --away: #f59e0b;
+  --busy: #ef4444;
+  --offline: #4d5b77;
+  --message-own: #1e3a8a;
+  --message-other: #1e2535;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+#__next {
+  height: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Message bubble */
+.message-bubble {
+  @apply rounded-2xl px-4 py-2.5 max-w-[70%] break-words;
+  line-height: 1.5;
+}
+
+.message-own {
+  background: var(--message-own);
+  @apply rounded-br-sm;
+}
+
+.message-other {
+  background: var(--message-other);
+  @apply rounded-bl-sm;
+}
+
+/* Status dot */
+.status-dot {
+  @apply w-2.5 h-2.5 rounded-full border-2;
+  border-color: var(--bg-secondary);
+}
+.status-dot.online { background: var(--online); }
+.status-dot.away { background: var(--away); }
+.status-dot.busy { background: var(--busy); }
+.status-dot.offline { background: var(--offline); }
+
+/* Sidebar item */
+.sidebar-item {
+  @apply flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-150;
+  color: var(--text-secondary);
+}
+.sidebar-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.sidebar-item.active {
+  background: var(--accent-dim);
+  color: var(--accent-hover);
+}
+
+/* Input */
+.chat-input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  @apply rounded-2xl px-4 py-3 w-full outline-none text-sm transition-all;
+}
+.chat-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.chat-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Button */
+.btn-primary {
+  background: var(--accent);
+  @apply text-white rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-150;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(59, 111, 247, 0.3);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Typing indicator */
+.typing-dot {
+  @apply w-1.5 h-1.5 rounded-full;
+  background: var(--text-muted);
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* Notification badge */
+.notif-badge {
+  @apply absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1;
+  background: var(--busy);
+}
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(30, 37, 53, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
 }
