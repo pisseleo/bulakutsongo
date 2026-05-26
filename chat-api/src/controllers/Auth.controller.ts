@@ -64,7 +64,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) throw new AppError('Invalid email or password', 401);
 
-  if (!user.is_verified) throw new AppError('Account not verified. Check your email.', 403);
+  if (!user.is_verified) throw new AppError('A tua conta nao foi verificada, verifique teu email.', 403);
 
   if (user.is_2fa_enabled) {
     // Step 1 done — client must proceed to /auth/login/2fa

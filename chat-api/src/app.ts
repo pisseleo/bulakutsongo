@@ -1,4 +1,5 @@
-import express, { Response } from 'express';
+import 'express-async-errors'; // ← FIX: automatically catches async errors
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -20,7 +21,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
-// Rotas
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/conversations', conversationRoutes);
@@ -30,10 +31,38 @@ app.use('/api/upload', uploadRoutes);
 // Health check
 app.get('/health', (res: Response) => res.json({ status: 'ok' }));
 
-// 404
-// app.use(notFound);
+// 404 handler – must be before error handler
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    error: 'Route not found',
+    path: req.path,
+    method: req.method,
+  });
+});
 
-// Error handler
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Global error handler (catches all errors passed via next())
 app.use(errorHandler);
 
 export default app;

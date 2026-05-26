@@ -1,2 +1,110 @@
 2026-05-26 09:20:11 [info] Firebase Admin SDK initialised
 2026-05-26 09:20:11 [info] Redis connected
+2026-05-26 09:27:28 [info] Firebase Admin SDK initialised
+2026-05-26 09:27:28 [info] Redis connected
+2026-05-26 09:30:43 [info] Firebase Admin SDK initialised
+2026-05-26 09:30:43 [info] Redis connected
+2026-05-26 09:14:59 [info] Firebase Admin SDK initialised
+2026-05-26 09:15:00 [info] Redis connected
+2026-05-26 14:42:35 [info] Firebase Admin SDK initialised
+2026-05-26 14:42:36 [info] Redis connected
+2026-05-26 15:12:30 [error] Prisma error 
+Invalid `prisma.user.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:34
+
+  18 if (existing) throw new AppError('Email is already in use', 409);
+  19 
+  20 const hash = await bcrypt.hash(password, 12);
+→ 21 const user = await prisma.user.create({
+       data: {
+         email: "leochima@gmail.com",
+         password: "$2a$12$fH/i0xnL.2n.0Hazn2otL.gY9gq2gz8yMUyqoGPQ9TmkEAvFFMz6y",
+     +   full_name: String
+       },
+       select: {
+         id: true,
+         email: true,
+         full_name: true
+       }
+     })
+
+Argument `full_name` is missing.
+2026-05-26 15:12:30 [error] [POST] /api/auth/register
+PrismaClientValidationError: 
+Invalid `prisma.user.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:34
+
+  18 if (existing) throw new AppError('Email is already in use', 409);
+  19 
+  20 const hash = await bcrypt.hash(password, 12);
+→ 21 const user = await prisma.user.create({
+       data: {
+         email: "leochima@gmail.com",
+         password: "$2a$12$fH/i0xnL.2n.0Hazn2otL.gY9gq2gz8yMUyqoGPQ9TmkEAvFFMz6y",
+     +   full_name: String
+       },
+       select: {
+         id: true,
+         email: true,
+         full_name: true
+       }
+     })
+
+Argument `full_name` is missing.
+    at wn (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at $n.handleRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6958)
+    at $n.handleAndLogRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async register (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:16)
+2026-05-26 15:14:11 [info] Firebase Admin SDK initialised
+2026-05-26 15:14:12 [info] Redis connected
+2026-05-26 15:14:53 [error] Prisma error 
+Invalid `prisma.user.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:34
+
+  18 if (existing) throw new AppError('Email is already in use', 409);
+  19 
+  20 const hash = await bcrypt.hash(password, 12);
+→ 21 const user = await prisma.user.create({
+       data: {
+         email: "leochima@gmail.com",
+         password: "$2a$12$hHDMfFP/6GRVu3nS9vTqT.br15gInYKnypLw0cQx2tWIZPjHA/iXm",
+     +   full_name: String
+       },
+       select: {
+         id: true,
+         email: true,
+         full_name: true
+       }
+     })
+
+Argument `full_name` is missing.
+2026-05-26 15:14:53 [error] [POST] /api/auth/register
+PrismaClientValidationError: 
+Invalid `prisma.user.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:34
+
+  18 if (existing) throw new AppError('Email is already in use', 409);
+  19 
+  20 const hash = await bcrypt.hash(password, 12);
+→ 21 const user = await prisma.user.create({
+       data: {
+         email: "leochima@gmail.com",
+         password: "$2a$12$hHDMfFP/6GRVu3nS9vTqT.br15gInYKnypLw0cQx2tWIZPjHA/iXm",
+     +   full_name: String
+       },
+       select: {
+         id: true,
+         email: true,
+         full_name: true
+       }
+     })
+
+Argument `full_name` is missing.
+    at wn (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at $n.handleRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6958)
+    at $n.handleAndLogRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async register (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:16)

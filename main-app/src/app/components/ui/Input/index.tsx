@@ -20,7 +20,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={clsx(
-          'w-full bg-zinc-900 border rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-all duration-200',
+          'w-full h-11 bg-zinc-900 border rounded-xl px-4 py-2 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-all duration-200',
           'focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20',
           icon && 'pl-10',
           rightIcon && 'pr-10',
@@ -30,9 +30,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {...props}
       />
       {rightIcon && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 cursor-pointer">
           {rightIcon}
-        </span>
+        </div>
       )}
       {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
     </div>
@@ -92,14 +92,13 @@ export const FormField: React.FC<{ label: string; error?: string; children: Reac
 export const AuthCard: React.FC<{ children: ReactNode; title: string; subtitle?: string }> = ({
   children, title, subtitle
 }) => (
-  <div className="min-h-screen bg-black flex items-center justify-center p-4">
-    {/* Ambient glow */}
+  <div className="min-h-screen bg-black flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+    {/* Ambient glow - responsive scaling */}
     <div className="pointer-events-none fixed inset-0 overflow-hidden">
       <div className="absolute top-[-20%] left-[60%] w-[600px] h-[600px] rounded-full opacity-[0.04]"
         style={{ background: 'radial-gradient(circle, #f59e0b, transparent)' }} />
       <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full opacity-[0.03]"
         style={{ background: 'radial-gradient(circle, #f59e0b, transparent)' }} />
-      {/* Grid */}
       <div className="absolute inset-0 opacity-[0.015]"
         style={{
           backgroundImage: 'linear-gradient(#f59e0b 1px, transparent 1px), linear-gradient(90deg, #f59e0b 1px, transparent 1px)',
@@ -108,21 +107,21 @@ export const AuthCard: React.FC<{ children: ReactNode; title: string; subtitle?:
     </div>
 
     <div className="relative w-full max-w-md">
-      {/* Logo */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 mb-6">
+      {/* Logo - responsive text */}
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="inline-flex items-center gap-2 mb-4 sm:mb-6">
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
             <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-black" stroke="currentColor" strokeWidth="2.5">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <span className="font-bold text-white text-lg tracking-tight">Nexus</span>
+          <span className="font-bold text-xl sm:text-2xl uppercase text-white tracking-tight">Bulakutsongo</span>
         </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-zinc-500 mt-1.5">{subtitle}</p>}
+        <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{title}</h1>
+        {subtitle && <p className="text-xs sm:text-sm text-zinc-500 mt-1.5">{subtitle}</p>}
       </div>
 
-      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-8 shadow-2xl">
+      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-5 sm:p-8 shadow-2xl">
         {children}
       </div>
     </div>
@@ -168,7 +167,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({ length = 6, value, onChange,
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-2 justify-center">
+      <div className="flex gap-2 justify-center flex-wrap">
         {digits.map((d, i) => (
           <input
             key={i}
@@ -181,7 +180,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({ length = 6, value, onChange,
             onKeyDown={e => handleKey(i, e)}
             onPaste={handlePaste}
             className={clsx(
-              'w-11 h-13 text-center text-lg font-bold bg-zinc-900 border rounded-xl text-white outline-none transition-all',
+              'w-10 h-12 sm:w-12 sm:h-14 text-center text-lg font-bold bg-zinc-900 border rounded-xl text-white outline-none transition-all',
               'focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20',
               error ? 'border-red-500/60' : d ? 'border-zinc-700' : 'border-zinc-800'
             )}

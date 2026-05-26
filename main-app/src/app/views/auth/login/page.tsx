@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../../context/Auth.context';
 import { AuthCard, Button, FormField, Input, OtpInput } from '@/components/ui/Input';
+
 interface ApiError {
   response?: {
     data?: {
@@ -13,6 +14,7 @@ interface ApiError {
     };
   };
 }
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, loginWith2FA, pendingUserId, requires2FA, isLoading } = useAuth();
@@ -55,8 +57,8 @@ export default function LoginPage() {
   if (requires2FA) {
     return (
       <AuthCard
-        title="Two-factor authentication"
-        subtitle="Enter the code from your authenticator app"
+        title="Autenticação de dois fatores"
+        subtitle="Digite o código do seu aplicativo autenticador ou use um código de backup"
       >
         <form onSubmit={handle2FA} className="flex flex-col gap-5">
           <div className="flex justify-center py-2">
@@ -74,7 +76,7 @@ export default function LoginPage() {
           {!useBackup ? (
             <div className="flex flex-col gap-3">
               <p className="text-xs text-zinc-500 text-center uppercase tracking-widest font-semibold">
-                6-digit code
+                6 digitos do aplicativo autenticador
               </p>
               <OtpInput length={6} value={totpCode} onChange={setTotpCode} error={undefined} />
             </div>
@@ -106,7 +108,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthCard title="Welcome back" subtitle="Sign in to continue to Nexus">
+    <AuthCard title="Benvindo de volta" subtitle="Entra na comunidade e inicie conversas instantaneas">
       <form onSubmit={handleLogin} className="flex flex-col gap-5">
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
@@ -134,7 +136,7 @@ export default function LoginPage() {
             icon={<Lock size={15} />}
             required
             rightIcon={
-              <button type="button" onClick={() => setShowPass(v => !v)}>
+              <button type="button" onClick={() => setShowPass(v => !v)} className="focus:outline-none">
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             }
@@ -144,12 +146,12 @@ export default function LoginPage() {
         <div className="flex justify-end -mt-2">
           <Link href="/views/auth/forgot-password"
             className="text-xs text-zinc-500 hover:text-amber-500 transition-colors">
-            Forgot password?
+            Esqueceu a senha?
           </Link>
         </div>
 
         <Button type="submit" isLoading={isLoading} fullWidth>
-          Sign In
+          Entrar
         </Button>
 
         <div className="relative flex items-center gap-3 my-1">

@@ -6,6 +6,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'ghost' | 'danger' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
+  fullWidth?: boolean;
 }
 
 const variants = {
@@ -21,13 +22,13 @@ const sizes = {
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', loading, children, className, disabled, ...props }, ref) => (
+  ({ variant = 'primary', size = 'md', loading, fullWidth, children, className, disabled, ...props }, ref) => (
     <button
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
-        variants[variant], sizes[size], className
+        'inline-flex items-center justify-center h-10 gap-2 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+        variants[variant], sizes[size],fullWidth && 'w-full', className
       )}
       {...props}
     >
