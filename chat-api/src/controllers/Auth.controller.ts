@@ -97,7 +97,7 @@ export async function loginWith2FA(req: Request, res: Response): Promise<void> {
 
   const twofa = await prisma.user2FA.findUnique({ where: { user_id: userId } });
 
-  if (twofa?.totp_secret) {
+  if (twofa?.secret) {
     // TOTP app verification
     if (!totpCode) throw new AppError('TOTP code required', 400);
     await validateTotpForUser(userId, totpCode);

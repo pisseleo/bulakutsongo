@@ -7,12 +7,29 @@ import { AuthenticatedRequest } from '../types';
 
 const MEMBER_SELECT = {
   user_id: true,
-  role: true,
   joined_at: true,
-  user: { select: { id: true, full_name: true, profile_picture_url: true, status: true } },
+  user: {
+    select: {
+      id: true,
+      full_name: true,
+      profile_picture_url: true,
+      status: true,
+    },
+  },
 };
 
-// ── Create conversation ───────────────────────────────────────────────────────
+// Helper to check if a user has a global admin role
+async function isGlobalAdmin(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { roles: { select: { name: true } } },
+  });
+  return user?.roles.some((role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN') ?? false;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Create conversation (1-1 or group)
+// ──────────────────────────────────────────────────────────────────
 export async function createConversation(req: Request, res: Response): Promise<void> {
   const { user } = req as AuthenticatedRequest;
   const { name, memberIds, isGroup } = req.body as {
@@ -22,19 +39,21 @@ export async function createConversation(req: Request, res: Response): Promise<v
   };
 
   const allMemberIds = [...new Set([user.id, ...memberIds])];
-  if (allMemberIds.length < 2) throw new AppError('At least 2 members required', 400);
+  if (allMemberIds.length < 2) {
+    throw new AppError('At least 2 members required', 400);
+  }
 
   // For direct (1-1) conversations, check if one already exists
   if (!isGroup && allMemberIds.length === 2) {
-    const other = allMemberIds.find((id) => id !== user.id)!;
+    const otherId = allMemberIds.find((id) => id !== user.id)!;
     const existing = await prisma.conversation.findFirst({
       where: {
         is_group: false,
-        members: { every: { user_id: { in: allMemberIds } } },
         AND: [
           { members: { some: { user_id: user.id } } },
-          { members: { some: { user_id: other } } },
+          { members: { some: { user_id: otherId } } },
         ],
+        members: { every: { user_id: { in: allMemberIds } } },
       },
       include: { members: { select: MEMBER_SELECT } },
     });
@@ -52,20 +71,18 @@ export async function createConversation(req: Request, res: Response): Promise<v
       members: {
         create: allMemberIds.map((id) => ({
           user_id: id,
-          role: id === user.id ? 'ADMIN' : 'MEMBER',
         })),
       },
     },
     include: { members: { select: MEMBER_SELECT } },
   });
 
-  // Notify new members via Socket.IO
   const io = getSocketServer();
-  for (const id of allMemberIds) {
-    io.in(`user:${id}`).socketsJoin(`conv:${conversation.id}`);
-    if (id !== user.id) {
+  for (const memberId of allMemberIds) {
+    io.in(`user:${memberId}`).socketsJoin(`conv:${conversation.id}`);
+    if (memberId !== user.id) {
       await createAndDeliverNotification({
-        userId: id,
+        userId: memberId,
         type: 'GROUP_INVITE',
         title: isGroup ? `Added to "${name}"` : `${user.full_name} started a conversation`,
         body: 'Tap to open',
@@ -77,19 +94,27 @@ export async function createConversation(req: Request, res: Response): Promise<v
   res.status(201).json({ success: true, data: conversation });
 }
 
-// ── List conversations ────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────
+// List conversations for current user (ordered by creation date)
+// ──────────────────────────────────────────────────────────────────
 export async function getConversations(req: Request, res: Response): Promise<void> {
   const { user } = req as AuthenticatedRequest;
 
   const conversations = await prisma.conversation.findMany({
     where: { members: { some: { user_id: user.id } } },
-    orderBy: { updated_at: 'desc' },
+    orderBy: { created_at: 'desc' }, // ✅ use created_at (no updated_at)
     include: {
       members: { select: MEMBER_SELECT },
       messages: {
         orderBy: { created_at: 'desc' },
         take: 1,
-        select: { id: true, content: true, media_type: true, created_at: true, sender_id: true },
+        select: {
+          id: true,
+          content: true,
+          media_type: true,
+          created_at: true,
+          sender_id: true,
+        },
       },
     },
   });
@@ -97,38 +122,81 @@ export async function getConversations(req: Request, res: Response): Promise<voi
   res.json({ success: true, data: conversations });
 }
 
-// ── Get single conversation ───────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────
+// Get single conversation by ID
+// ──────────────────────────────────────────────────────────────────
 export async function getConversation(req: Request, res: Response): Promise<void> {
   const { user } = req as AuthenticatedRequest;
   const { id } = req.params;
 
-  const conv = await prisma.conversation.findFirst({
-    where: { id, members: { some: { user_id: user.id } } },
+  const conversation = await prisma.conversation.findFirst({
+    where: {
+      id,
+      members: { some: { user_id: user.id } },
+    },
     include: { members: { select: MEMBER_SELECT } },
   });
-  if (!conv) throw new AppError('Conversation not found', 404);
 
-  res.json({ success: true, data: conv });
+  if (!conversation) {
+    throw new AppError('Conversation not found', 404);
+  }
+
+  res.json({ success: true, data: conversation });
 }
 
-// ── Add member ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────
+// Add a new member to a group conversation (global admin or creator)
+// ──────────────────────────────────────────────────────────────────
 export async function addMember(req: Request, res: Response): Promise<void> {
   const { user } = req as AuthenticatedRequest;
   const { id: conversationId } = req.params;
   const { userId: newUserId } = req.body as { userId: string };
 
-  const requester = await prisma.conversationMember.findUnique({
-    where: { conversation_id_user_id: { conversation_id: conversationId, user_id: user.id } },
+  // Verify conversation exists and is a group
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: { is_group: true, created_by: true },
   });
-  if (!requester || requester.role !== 'ADMIN') throw new AppError('Only admins can add members', 403);
+  if (!conversation) {
+    throw new AppError('Conversation not found', 404);
+  }
+  if (!conversation.is_group) {
+    throw new AppError('Cannot add members to a direct conversation', 400);
+  }
 
+  // Check permissions: global admin OR the conversation creator
+  const isAdmin = await isGlobalAdmin(user.id);
+  if (!isAdmin && conversation.created_by !== user.id) {
+    throw new AppError('Only admins or the conversation creator can add members', 403);
+  }
+
+  // Check if user is already a member
+  const existing = await prisma.conversationMember.findUnique({
+    where: {
+      conversation_id_user_id: {
+        conversation_id: conversationId,
+        user_id: newUserId,
+      },
+    },
+  });
+  if (existing) {
+    throw new AppError('User is already a member', 400);
+  }
+
+  // Add member
   await prisma.conversationMember.create({
-    data: { conversation_id: conversationId, user_id: newUserId, role: 'MEMBER' },
+    data: {
+      conversation_id: conversationId,
+      user_id: newUserId,
+    },
   });
 
   const io = getSocketServer();
   io.in(`user:${newUserId}`).socketsJoin(`conv:${conversationId}`);
-  io.to(`conv:${conversationId}`).emit('member:joined', { conversationId, userId: newUserId });
+  io.to(`conv:${conversationId}`).emit('member:joined', {
+    conversationId,
+    userId: newUserId,
+  });
 
   await createAndDeliverNotification({
     userId: newUserId,
@@ -141,21 +209,41 @@ export async function addMember(req: Request, res: Response): Promise<void> {
   res.json({ success: true, data: { message: 'Member added' } });
 }
 
-// ── Remove member / Leave ─────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────
+// Remove a member (or leave) – global admin or creator can remove others
+// ──────────────────────────────────────────────────────────────────
 export async function removeMember(req: Request, res: Response): Promise<void> {
   const { user } = req as AuthenticatedRequest;
   const { id: conversationId, memberId } = req.params;
   const isSelf = memberId === user.id;
 
-  if (!isSelf) {
-    const requester = await prisma.conversationMember.findUnique({
-      where: { conversation_id_user_id: { conversation_id: conversationId, user_id: user.id } },
-    });
-    if (!requester || requester.role !== 'ADMIN') throw new AppError('Only admins can remove members', 403);
+  // Verify conversation exists and is a group
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: { is_group: true, created_by: true },
+  });
+  if (!conversation) {
+    throw new AppError('Conversation not found', 404);
+  }
+  if (!conversation.is_group) {
+    throw new AppError('Cannot remove members from a direct conversation', 400);
   }
 
+  if (!isSelf) {
+    const isAdmin = await isGlobalAdmin(user.id);
+    if (!isAdmin && conversation.created_by !== user.id) {
+      throw new AppError('Only admins or the conversation creator can remove other members', 403);
+    }
+  }
+
+  // Remove the member
   await prisma.conversationMember.delete({
-    where: { conversation_id_user_id: { conversation_id: conversationId, user_id: memberId } },
+    where: {
+      conversation_id_user_id: {
+        conversation_id: conversationId,
+        user_id: memberId,
+      },
+    },
   });
 
   const io = getSocketServer();
@@ -163,4 +251,21 @@ export async function removeMember(req: Request, res: Response): Promise<void> {
   io.in(`user:${memberId}`).socketsLeave(`conv:${conversationId}`);
 
   res.status(204).send();
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Optional: Get all global admin users (if needed elsewhere)
+// ──────────────────────────────────────────────────────────────────
+export async function getGlobalAdmins(res: Response): Promise<void> {
+  const admins = await prisma.user.findMany({
+    where: {
+      roles: {
+        some: {
+          name: { in: ['ADMIN', 'SUPER_ADMIN'] },
+        },
+      },
+    },
+    select: { id: true, full_name: true, email: true },
+  });
+  res.json({ success: true, data: admins });
 }

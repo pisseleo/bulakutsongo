@@ -4,7 +4,7 @@ import { sendMulticastPush, PushPayload } from '../configs/firebase';
 import { isOnline } from './presence.service';
 import { getSocketServer } from '../socket/socket';
 import { logger } from '../configs/logger';
-import { NotificationType } from '@/generated/prisma';
+import { NotificationType, Prisma } from '@/generated/prisma';
 
 interface CreateNotificationInput {
   userId: string;
@@ -28,7 +28,7 @@ export async function createAndDeliverNotification(
       type: input.type,
       title: input.title,
       body: input.body,
-      data: input.data ?? {},
+      data: (input.data ?? {}) as Prisma.JsonObject, 
     },
   });
 

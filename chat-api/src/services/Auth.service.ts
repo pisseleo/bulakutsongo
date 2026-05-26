@@ -19,7 +19,7 @@ export const register = async (email: string, full_name: string, password: strin
 
   const password_hash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { email, full_name, password_hash, is_2fa_enabled: false },
+    data: { email, full_name, password: password_hash, is_2fa_enabled: false },
   });
 
   // Optional: temporary token to set up 2FA immediately after registration
@@ -37,7 +37,7 @@ export const login = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new AppError('Invalid credentials', 401);
 
-  const valid = await bcrypt.compare(password, user.password_hash);
+  const valid = await bcrypt.compare(password, user.password);
   if (!valid) throw new AppError('Invalid credentials', 401);
 
   // If 2FA is enabled, return a temporary token for the second step

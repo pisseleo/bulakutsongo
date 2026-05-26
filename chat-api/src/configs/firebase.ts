@@ -1,6 +1,7 @@
 import admin from 'firebase-admin';
 import { logger } from './logger';
-
+import { Bucket } from '@google-cloud/storage';
+import { Messaging } from 'firebase-admin/messaging';
 // ── Initialise Firebase Admin SDK once ────────────────────────────────────────
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -19,10 +20,8 @@ export const firestoreDb = admin.firestore();
 firestoreDb.settings({ ignoreUndefinedProperties: true });
 
 // ── Firebase Storage ──────────────────────────────────────────────────────────
-export const storageBucket = admin.storage().bucket();
-
-// ── FCM (push notifications) ──────────────────────────────────────────────────
-export const fcmMessaging = admin.messaging();
+export const storageBucket: Bucket = admin.storage().bucket(process.env.FIREBASE_STORAGE_BUCKET);
+export const fcmMessaging: Messaging = admin.messaging();
 
 // ── Firestore collection references ──────────────────────────────────────────
 export const COLLECTIONS = {

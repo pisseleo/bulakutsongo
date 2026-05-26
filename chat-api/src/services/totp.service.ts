@@ -64,8 +64,8 @@ export async function confirmTotpSetup(
 
   await prisma.user2FA.upsert({
     where: { user_id: userId },
-    create: { user_id: userId, totp_secret: secret, backup_codes: backupCodes },
-    update: { totp_secret: secret, backup_codes: backupCodes },
+    create: { user_id: userId, secret: secret, backup_codes: backupCodes },
+    update: { secret: secret, backup_codes: backupCodes },
   });
 
   await prisma.user.update({
@@ -96,10 +96,10 @@ export function verifyTotpCode(secret: string, code: string): boolean {
  */
 export async function validateTotpForUser(userId: string, code: string): Promise<void> {
   const twofa = await prisma.user2FA.findUnique({ where: { user_id: userId } });
-  if (!twofa?.totp_secret) {
+  if (!twofa?.secret) {
     throw new AppError('TOTP not configured for this account.', 400);
   }
-  if (!verifyTotpCode(twofa.totp_secret, code)) {
+  if (!verifyTotpCode(twofa.secret, code)) {
     throw new AppError('Invalid TOTP code.', 401);
   }
 }
@@ -109,8 +109,8 @@ export async function validateTotpForUser(userId: string, code: string): Promise
  */
 export async function disableTotp(userId: string, code: string): Promise<void> {
   const twofa = await prisma.user2FA.findUnique({ where: { user_id: userId } });
-  if (!twofa?.totp_secret) throw new AppError('TOTP is not enabled.', 400);
-  if (!verifyTotpCode(twofa.totp_secret, code)) throw new AppError('Invalid TOTP code.', 401);
+  if (!twofa?.secret) throw new AppError('TOTP is not enabled.', 400);
+  if (!verifyTotpCode(twofa.secret, code)) throw new AppError('Invalid TOTP code.', 401);
 
   await prisma.user2FA.delete({ where: { user_id: userId } });
   await prisma.user.update({ where: { id: userId }, data: { is_2fa_enabled: false } });
