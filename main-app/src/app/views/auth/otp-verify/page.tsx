@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { MailCheck, RefreshCw } from 'lucide-react';
+import { MailCheck, RefreshCw, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/Auth.context';
-import { AuthCard, Button, OtpInput } from '@/components/ui/Input';
+import { OtpInput } from '@/components/ui/Input';
+import styles from './verify-email.module.css';
 
 const RESEND_COOLDOWN = 60;
 
@@ -30,20 +31,23 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setInterval(() => setCooldown(c => c - 1), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setCooldown(c => c - 1), 1000);
+    return () => clearInterval(timer);
   }, [cooldown]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length < 6) { setError('Enter all 6 digits'); return; }
+    if (otp.length < 6) {
+      setError('Digite os 6 dígitos do código');
+      return;
+    }
     setError('');
     try {
       await verifyAccount({ email, otp });
-      setSuccess('Email verified! Redirecting…');
-      setTimeout(() => router.push('/'), 1500);
+      setSuccess('Email verificado com sucesso! Redirecionando...');
+      setTimeout(() => router.push('/views/chat/chat'), 1500);
     } catch (err: unknown) {
-      setError((err as ApiError)?.response?.data?.error || 'Invalid or expired code');
+      setError((err as ApiError)?.response?.data?.error || 'Código inválido ou expirado');
     }
   };
 
@@ -51,58 +55,92 @@ export default function VerifyEmailPage() {
     if (cooldown > 0) return;
     setError('');
     try {
-      await resendOtp({ email });
-      setSuccess('New code sent!');
+      await resendOtp({ email, purpose: 'ACCOUNT_VERIFICATION' });
+      setSuccess('Novo código enviado!');
       setCooldown(RESEND_COOLDOWN);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: unknown) {
-      setError((err as ApiError)?.response?.data?.error || 'Failed to resend code');
+      setError((err as ApiError)?.response?.data?.error || 'Erro ao reenviar código');
     }
   };
 
+  const handleGoBack = () => {
+    router.push('/views/auth/login');
+  };
+
   return (
-    <AuthCard
-      title="Verify your email"
-      subtitle={`We sent a 6-digit code to ${email || 'your email'}`}
-    >
-      <form onSubmit={handleVerify} className="flex flex-col gap-6">
-        {/* Icon */}
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <MailCheck size={32} className="text-amber-500" />
+    <div className={styles.container}>
+      <div className={styles.card}>
+        {/* Botão voltar */}
+        <button onClick={handleGoBack} className={styles.backButton}>
+          <ArrowLeft size={18} />
+          Voltar
+        </button>
+
+        {/* Ícone */}
+        <div className={styles.iconWrapper}>
+          <div className={styles.iconCircle}>
+            <MailCheck size={40} />
           </div>
         </div>
 
+        {/* Título */}
+        <h1 className={styles.title}>Verificar seu email</h1>
+        <p className={styles.message}>
+          Enviamos um código de 6 dígitos para{' '}
+          <strong>{email || 'seu email'}</strong>
+        </p>
+
+        {/* Alertas */}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400 text-center">
+          <div className={styles.errorAlert}>
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 text-sm text-green-400 text-center">
+          <div className={styles.successAlert}>
+            <MailCheck size={16} />
             {success}
           </div>
         )}
 
-        <OtpInput length={6} value={otp} onChange={setOtp} />
+        {/* Formulário OTP */}
+        <form onSubmit={handleVerify} className={styles.form}>
+          <label className={styles.otpLabel}>
+            Código de verificação
+          </label>
+          <OtpInput 
+            length={6} 
+            value={otp} 
+            onChange={setOtp} 
+          />
+          <p className={styles.otpHint}>
+            Digite os 6 dígitos que enviámos para o seu email
+          </p>
 
-        <Button type="submit" isLoading={isLoading} fullWidth disabled={otp.length < 6}>
-          Verify Email
-        </Button>
+          <button 
+            type="submit" 
+            disabled={isLoading || otp.length < 6}
+            className={styles.verifyButton}
+          >
+            {isLoading ? 'A verificar...' : 'Verificar Email'}
+          </button>
+        </form>
 
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-zinc-500">Nao recebeu codigo?</p>
+        {/* Reenviar código */}
+        <div className={styles.resendSection}>
+          <p className={styles.resendText}>Não recebeu o código?</p>
           <button
             type="button"
             onClick={handleResend}
             disabled={cooldown > 0}
-            className="flex items-center gap-2 text-sm text-amber-500 hover:text-amber-400 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors font-medium"
+            className={styles.resendButton}
           >
-            <RefreshCw size={14} className={cooldown > 0 ? '' : 'group-hover:rotate-180 transition-transform'} />
-            {cooldown > 0 ? `Reenviar em  ${cooldown}s` : 'reenviar o codigo'}
+            <RefreshCw size={14} className={cooldown > 0 ? styles.spinning : ''} />
+            {cooldown > 0 ? `Reenviar em ${cooldown}s` : 'Reenviar código'}
           </button>
         </div>
-      </form>
-    </AuthCard>
+      </div>
+    </div>
   );
 }

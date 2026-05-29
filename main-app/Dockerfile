@@ -11,7 +11,7 @@ RUN npm ci
 COPY . .
 
 # Fazer build do Next.js
-RUN npm run build
+RUN npm run dev
 
 # Imagem final
 FROM node:20-alpine

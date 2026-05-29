@@ -63,6 +63,8 @@ export async function createConversation(req: Request, res: Response): Promise<v
     }
   }
 
+
+
   const conversation = await prisma.conversation.create({
     data: {
       name: isGroup ? name : null,
@@ -93,7 +95,37 @@ export async function createConversation(req: Request, res: Response): Promise<v
 
   res.status(201).json({ success: true, data: conversation });
 }
+  // conversation.controller.ts
+export async function createDirectConversation(req: Request, res: Response) {
+  const { user } = req as AuthenticatedRequest;
+  const { userId } = req.body;
 
+  // Check if already exists (optional)
+  const existing = await prisma.conversation.findFirst({
+    where: {
+      is_group: false,
+      members: {
+        every: { user_id: { in: [user.id, userId] } },
+        some: { user_id: user.id }
+      }
+    }
+  });
+  if (existing) {
+    return res.json({ success: true, data: existing });
+  }
+
+  const conversation = await prisma.conversation.create({
+    data: {
+      is_group: false,
+      created_by: user.id,
+      members: {
+        create: [{ user_id: user.id }, { user_id: userId }]
+      }
+    },
+    include: { members: { include: { user: true } } }
+  });
+  return res.status(201).json({ success: true, data: conversation });
+}
 // ──────────────────────────────────────────────────────────────────
 // List conversations for current user (ordered by creation date)
 // ──────────────────────────────────────────────────────────────────

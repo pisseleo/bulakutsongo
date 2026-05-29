@@ -12,12 +12,14 @@ export const apiClient = axios.create({
 // ─── Token helpers ────────────────────────────────────────────────────────────
 
 const getTokens = (): AuthTokens | null => {
+  
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem('auth_tokens');
   return raw ? JSON.parse(raw) : null;
 };
 
 export const saveTokens = (tokens: AuthTokens) => {
+  console.log('Saving tokens:', tokens);
   localStorage.setItem('auth_tokens', JSON.stringify(tokens));
 };
 

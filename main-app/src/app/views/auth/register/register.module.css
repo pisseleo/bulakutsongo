@@ -1,0 +1,238 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #128C7E;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Área de scroll */
+.scrollArea {
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 20px 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Scrollbar personalizada */
+.scrollArea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollArea::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.scrollArea::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  width: 420px;
+  max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  margin: auto;
+}
+
+.logo {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.title {
+  color: #075E54;
+  font-size: 22px;
+  text-align: center;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #6c757d;
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.avatarPreview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid #128C7E;
+  transition: all 0.2s;
+}
+
+.avatarPreview:hover {
+  opacity: 0.8;
+}
+
+.avatarPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #6c757d;
+}
+
+.avatarText {
+  font-size: 10px;
+  margin-top: 4px;
+  color: #6c757d;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarHint {
+  font-size: 10px;
+  color: #6c757d;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 6px;
+  color: #1a1a1a;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.required {
+  color: #dc3545;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1a1a1a;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #128C7E;
+  box-shadow: 0 0 0 2px rgba(18,140,126,0.2);
+}
+
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordWrapper input {
+  padding-right: 40px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.6;
+}
+
+.passwordToggle:hover {
+  opacity: 1;
+}
+
+.fieldError {
+  display: block;
+  color: #dc3545;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.button {
+  width: 100%;
+  padding: 12px;
+  background: #128C7E;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.button:hover {
+  background: #075E54;
+}
+
+.button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.divider {
+  margin: 20px 0;
+  height: 1px;
+  background: #e9ecef;
+}
+
+.links {
+  text-align: center;
+}
+
+.links a {
+  color: #128C7E;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 15px;
+  text-align: center;
+  border: 1px solid #f5c6cb;
+}

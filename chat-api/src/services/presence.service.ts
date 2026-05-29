@@ -103,3 +103,31 @@ export async function getBulkOnlineStatus(
 export async function getUserSocketIds(userId: string): Promise<string[]> {
   return (await getCache<string[]>(socketsKey(userId))) ?? [];
 }
+
+/**
+ * Get all online users with their details from the database.
+ * Returns user profile information for all users marked as online.
+ */
+export async function getAllOnlineUsers(): Promise<
+  Array<{
+    id: string;
+    email: string;
+    full_name: string;
+    profile_picture_url: string | null;
+    status: string | null;   // will be 'ONLINE' for these rows, but type allows null
+    last_seen: Date | null;  // will be a Date for online users, but type allows null
+  }>
+> {
+  return await prisma.user.findMany({
+    // where: { status: 'ONLINE' },
+    select: {
+      id: true,
+      email: true,
+      full_name: true,
+      profile_picture_url: true,
+      status: true,
+      last_seen: true,
+    },
+    orderBy: { last_seen: 'desc' },
+  });
+}

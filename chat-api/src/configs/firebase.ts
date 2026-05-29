@@ -2,14 +2,40 @@ import admin from 'firebase-admin';
 import { logger } from './logger';
 import { Bucket } from '@google-cloud/storage';
 import { Messaging } from 'firebase-admin/messaging';
+import * as fs from 'fs';
+// import * as path from 'path';
+
+// ── Load service account credentials ────────────────────────────────────────
+let credential: admin.credential.Credential;
+
+const jsonKeyPath = process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH;
+if (jsonKeyPath && fs.existsSync(jsonKeyPath)) {
+  // Load from JSON file
+  const keyFile = JSON.parse(fs.readFileSync(jsonKeyPath, 'utf8'));
+  credential = admin.credential.cert({
+    projectId: keyFile.project_id,
+    privateKey: keyFile.private_key,
+    clientEmail: keyFile.client_email,
+  });
+  logger.info(`Firebase service account loaded from ${jsonKeyPath}`);
+} else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+  // Fallback to environment variables (with newline replacement)
+  credential = admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  });
+  logger.info('Firebase service account loaded from environment variables');
+} else {
+  // Auto-detect via GOOGLE_APPLICATION_CREDENTIALS or default auth
+  logger.warn('No explicit Firebase credentials provided – relying on application default credentials (ADC)');
+  credential = admin.credential.applicationDefault();
+}
+
 // ── Initialise Firebase Admin SDK once ────────────────────────────────────────
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    }),
+    credential,
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   });
   logger.info('Firebase Admin SDK initialised');
@@ -25,14 +51,13 @@ export const fcmMessaging: Messaging = admin.messaging();
 
 // ── Firestore collection references ──────────────────────────────────────────
 export const COLLECTIONS = {
-  MESSAGES: 'messages',          // real-time message sync
-  PRESENCE: 'presence',          // online presence (alternative to Redis for clients)
-  TYPING: 'typing',              // typing indicators
-  CONVERSATIONS: 'conversations', // conversation metadata
+  MESSAGES: 'messages',
+  PRESENCE: 'presence',
+  TYPING: 'typing',
+  CONVERSATIONS: 'conversations',
 } as const;
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
-
 export interface UploadResult {
   url: string;
   path: string;
@@ -57,7 +82,6 @@ export async function deleteFromStorage(path: string): Promise<void> {
 }
 
 // ── FCM helpers ───────────────────────────────────────────────────────────────
-
 export interface PushPayload {
   title: string;
   body: string;
@@ -88,7 +112,7 @@ export async function sendMulticastPush(tokens: string[], payload: PushPayload):
 
   const chunks: string[][] = [];
   for (let i = 0; i < tokens.length; i += 500) {
-    chunks.push(tokens.slice(i, i + 500)); // FCM limit: 500 tokens per call
+    chunks.push(tokens.slice(i, i + 500));
   }
 
   await Promise.all(
@@ -105,7 +129,6 @@ export async function sendMulticastPush(tokens: string[], payload: PushPayload):
 }
 
 // ── Firestore helpers ─────────────────────────────────────────────────────────
-
 export interface FirestoreMessage {
   id: string;
   conversationId: string;
@@ -118,7 +141,6 @@ export interface FirestoreMessage {
   read: boolean;
 }
 
-/** Write a message to Firestore for real-time delivery to web/mobile clients */
 export async function writeMessageToFirestore(
   conversationId: string,
   message: Omit<FirestoreMessage, 'createdAt'>,
@@ -137,7 +159,6 @@ export async function writeMessageToFirestore(
   return ref.id;
 }
 
-/** Update presence in Firestore (for clients that listen to Firestore directly) */
 export async function setFirestorePresence(
   userId: string,
   status: 'online' | 'offline',
@@ -153,7 +174,6 @@ export async function setFirestorePresence(
   );
 }
 
-/** Write/clear a typing indicator in Firestore */
 export async function setTypingIndicator(
   conversationId: string,
   userId: string,

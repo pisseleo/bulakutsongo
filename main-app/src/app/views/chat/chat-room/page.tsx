@@ -31,8 +31,8 @@ export default function ChatRoom({ conversation, onBack }: ChatRoomProps) {
 
   const otherMember = conversation.members.find(m => m.userId !== user?.id);
   const displayName = conversation.type === 'direct'
-    ? (otherMember?.user.full_name || 'Unknown')
-    : (conversation.name || 'Group');
+    ? (otherMember?.user.full_name || 'Desconhecido')
+    : (conversation.name || 'Grupo');
 
   const displayAvatar = conversation.type === 'direct'
     ? otherMember?.user.profile_picture_url
@@ -117,8 +117,8 @@ export default function ChatRoom({ conversation, onBack }: ChatRoomProps) {
           <h2 className="text-sm font-semibold truncate">{displayName}</h2>
           <p className="text-xs text-zinc-500">
             {conversation.type === 'group'
-              ? `${conversation.members.length} members`
-              : 'Direct message'}
+              ? `${conversation.members.length} membros`
+              : 'Conversa direta'}
           </p>
         </div>
         <button className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">
@@ -197,7 +197,7 @@ export default function ChatRoom({ conversation, onBack }: ChatRoomProps) {
             value={text}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
-            placeholder={`Message ${displayName}…`}
+            placeholder={`Enviar mensagem para ${displayName}…`}
             rows={1}
             className="flex-1 bg-transparent text-sm text-zinc-100 placeholder-zinc-600 outline-none resize-none py-0.5"
             style={{ maxHeight: '120px' }}
@@ -253,7 +253,7 @@ function MessageRow({ msg, isOwn, isContinuation, showMenu, onMenu, onDelete }: 
         {!isContinuation && (
           <div className={clsx('flex items-baseline gap-2 mb-1', isOwn && 'flex-row-reverse')}>
             <span className="text-xs font-semibold text-zinc-300">{msg.sender?.full_name}</span>
-            <span className="text-[10px] text-zinc-600">{format(new Date(msg.createdAt), 'h:mm a')}</span>
+            <span className="text-[10px] text-zinc-600">{format(new Date(msg.createdAt), 'HH:mm')}</span>
           </div>
         )}
 
@@ -270,7 +270,7 @@ function MessageRow({ msg, isOwn, isContinuation, showMenu, onMenu, onDelete }: 
               isOwn ? 'rounded-br-sm' : 'rounded-bl-sm'
             )}
           >
-            {isDeleted ? 'Message deleted' : (
+            {isDeleted ? 'Mensagem apagada' : (
               <>
                 {msg.content && <p className="whitespace-pre-wrap break-words">{msg.content}</p>}
                 {msg.media_url && <AttachmentPreview attachment={msg.media_url} />}
@@ -295,7 +295,7 @@ function MessageRow({ msg, isOwn, isContinuation, showMenu, onMenu, onDelete }: 
             <button onClick={onDelete}
               className="flex items-center gap-1.5 text-xs text-red-400 bg-zinc-900 border border-zinc-800 px-2.5 py-1.5 rounded-lg hover:bg-zinc-800 transition-colors">
               <Trash2 size={11} />
-              Delete
+              Apagar
             </button>
           </div>
         )}
@@ -310,7 +310,7 @@ function AttachmentPreview({ attachment }: { attachment: NonNullable<Message['me
   if (attachment?.startsWith('image/')) {
     return (
       <div className="mt-2 rounded-xl overflow-hidden max-w-xs">
-        <Image src={attachment} alt="attachment" width={300} height={200}
+        <Image src={attachment} alt="anexo" width={300} height={200}
           className="object-cover rounded-xl" style={{ maxHeight: 200 }} />
       </div>
     );
@@ -332,7 +332,7 @@ function groupByDate(messages: Message[]): { label: string; msgs: Message[] }[] 
   const map = new Map<string, Message[]>();
   for (const msg of messages) {
     const d = new Date(msg.createdAt);
-    const label = isToday(d) ? 'Today' : isYesterday(d) ? 'Yesterday' : format(d, 'MMMM d, yyyy');
+    const label = isToday(d) ? 'Hoje' : isYesterday(d) ? 'Ontem' : format(d, 'd \'de\' MMMM \'de\' yyyy');
     if (!map.has(label)) map.set(label, []);
     map.get(label)!.push(msg);
   }

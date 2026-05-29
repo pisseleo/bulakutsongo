@@ -14,6 +14,7 @@ const REFRESH_EXPIRES = (process.env.JWT_REFRESH_EXPIRES || '7d') as StringValue
 const REFRESH_EXPIRES_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export interface TokenPair {
+  user: Pick<User, 'id' | 'email'>;
   accessToken: string;
   refreshToken: string;
   expiresIn: number; // seconds
@@ -58,7 +59,7 @@ export async function issueTokenPair(
 
   // Access token expiry in seconds (parse from string like '15m')
   const accessExpirySeconds = parseDurationToSeconds(ACCESS_EXPIRES);
-  return { accessToken, refreshToken, expiresIn: accessExpirySeconds };
+  return { user: user, accessToken, refreshToken, expiresIn: accessExpirySeconds };
 }
 
 /**

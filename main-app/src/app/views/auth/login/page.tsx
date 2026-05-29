@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
-import { useAuth } from '../../../context/Auth.context';
-import { AuthCard, Button, FormField, Input, OtpInput } from '@/components/ui/Input';
+import { useAuth } from '@/context/Auth.context';
+import styles from './login.module.css';
 
 interface ApiError {
   response?: {
@@ -21,7 +20,6 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPass, setShowPass] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const [useBackup, setUseBackup] = useState(false);
   const [backupCode, setBackupCode] = useState('');
@@ -32,9 +30,10 @@ export default function LoginPage() {
     setError('');
     try {
       const result = await login({ email, password });
-      if (!result.requires2FA) router.push('/');
+      // console.log(result)
+      if (!result.requires2FA) router.push('/views/chat/chat');
     } catch (err: unknown) {
-      setError((err as ApiError)?.response?.data?.error || 'Invalid email or password');
+      setError((err as ApiError)?.response?.data?.error || 'Email ou senha inválidos');
     }
   };
 
@@ -50,123 +49,101 @@ export default function LoginPage() {
       });
       router.push('/');
     } catch (err: unknown) {
-      setError((err as ApiError)?.response?.data?.error || 'Invalid code');
+      setError((err as ApiError)?.response?.data?.error || 'Código inválido');
     }
   };
 
+  // Tela de 2FA
   if (requires2FA) {
     return (
-      <AuthCard
-        title="Autenticação de dois fatores"
-        subtitle="Digite o código do seu aplicativo autenticador ou use um código de backup"
-      >
-        <form onSubmit={handle2FA} className="flex flex-col gap-5">
-          <div className="flex justify-center py-2">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <ShieldCheck size={28} className="text-amber-500" />
-            </div>
-          </div>
+      <div className={styles.container}>
+        <div className={styles.box}>
+          <div className={styles.logo}>🔐</div>
+          <h1 className={styles.title}>Autenticação de dois fatores</h1>
+          <p className={styles.subtitle}>Digite o código do seu aplicativo autenticador</p>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400 text-center">
-              {error}
-            </div>
-          )}
+          {error && <div className={styles.error}>{error}</div>}
 
           {!useBackup ? (
-            <div className="flex flex-col gap-3">
-              <p className="text-xs text-zinc-500 text-center uppercase tracking-widest font-semibold">
-                6 digitos do aplicativo autenticador
-              </p>
-              <OtpInput length={6} value={totpCode} onChange={setTotpCode} error={undefined} />
+            <div className={styles.inputGroup}>
+              <label>Código de 6 dígitos</label>
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="000000"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+                style={{ textAlign: 'center', fontSize: '20px', letterSpacing: '5px' }}
+              />
             </div>
           ) : (
-            <FormField label="Backup Code">
-              <Input
-                placeholder="xxxxxxxx-xxxx-xxxx"
+            <div className={styles.inputGroup}>
+              <label>Código de Backup</label>
+              <input
+                type="text"
+                placeholder="xxxx-xxxx-xxxx"
                 value={backupCode}
-                onChange={e => setBackupCode(e.target.value)}
-                icon={<ShieldCheck size={15} />}
+                onChange={(e) => setBackupCode(e.target.value)}
               />
-            </FormField>
+            </div>
           )}
 
-          <Button type="submit" isLoading={isLoading} fullWidth>
-            Verify
-          </Button>
+          <button className={styles.button} onClick={handle2FA} disabled={isLoading}>
+            {isLoading ? 'A verificar...' : 'Verificar'}
+          </button>
 
           <button
-            type="button"
             onClick={() => { setUseBackup(v => !v); setError(''); }}
-            className="text-sm text-zinc-500 hover:text-amber-500 transition-colors text-center"
+            className={styles.backupBtn}
           >
-            {useBackup ? '← Back to authenticator code' : 'Use backup code instead'}
+            {useBackup ? '← Voltar ao código autenticador' : 'Usar código de backup'}
           </button>
-        </form>
-      </AuthCard>
+        </div>
+      </div>
     );
   }
 
+  // Tela de Login normal
   return (
-    <AuthCard title="Benvindo de volta" subtitle="Entra na comunidade e inicie conversas instantaneas">
-      <form onSubmit={handleLogin} className="flex flex-col gap-5">
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
-            {error}
-          </div>
-        )}
+    <div className={styles.container}>
+      <div className={styles.box}>
+        <div className={styles.logo}>💬</div>
+        <h1 className={styles.title}>BulakutSongo</h1>
+        <p className={styles.subtitle}>O teu chat moçambicano</p>
 
-        <FormField label="Email">
-          <Input
-            type="email"
-            placeholder="you@example.com"
+        {error && <div className={styles.error}>{error}</div>}
+
+        <div className={styles.inputGroup}>
+          <label>Email</label>
+          <input 
+            type="email" 
+            placeholder="seu@email.com" 
             value={email}
-            onChange={e => setEmail(e.target.value)}
-            icon={<Mail size={15} />}
-            required
+            onChange={(e) => setEmail(e.target.value)}
           />
-        </FormField>
+        </div>
 
-        <FormField label="Password">
-          <Input
-            type={showPass ? 'text' : 'password'}
-            placeholder="Your password"
+        <div className={styles.inputGroup}>
+          <label>Senha</label>
+          <input 
+            type="password" 
+            placeholder="••••••••" 
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            icon={<Lock size={15} />}
-            required
-            rightIcon={
-              <button type="button" onClick={() => setShowPass(v => !v)} className="focus:outline-none">
-                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            }
+            onChange={(e) => setPassword(e.target.value)}
           />
-        </FormField>
-
-        <div className="flex justify-end -mt-2">
-          <Link href="/views/auth/forgot-password"
-            className="text-xs text-zinc-500 hover:text-amber-500 transition-colors">
-            Esqueceu a senha?
-          </Link>
         </div>
 
-        <Button type="submit" isLoading={isLoading} fullWidth>
-          Entrar
-        </Button>
+        <button className={styles.button} onClick={handleLogin} disabled={isLoading}>
+          {isLoading ? 'A entrar...' : 'Entrar'}
+        </button>
 
-        <div className="relative flex items-center gap-3 my-1">
-          <div className="flex-1 h-px bg-zinc-900" />
-          <span className="text-xs text-zinc-700">or</span>
-          <div className="flex-1 h-px bg-zinc-900" />
+        <div className={styles.divider}></div>
+
+        <div className={styles.links}>
+          <Link href="/views/auth/register">Criar conta</Link>
+          <Link href="/views/auth/email-verification">Esqueceu a senha?</Link>
         </div>
-
-        <p className="text-center text-sm text-zinc-500">
-          Se nao tiver conta{' '}
-          <Link href="/views/auth/register" className="text-amber-500 hover:text-amber-400 font-medium transition-colors">
-            cadastre-se
-          </Link>
-        </p>
-      </form>
-    </AuthCard>
+      </div>
+    </div>
   );
 }

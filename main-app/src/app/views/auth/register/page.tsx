@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Eye, EyeOff, AtSign } from 'lucide-react';
 import { useAuth } from '@/context/Auth.context';
-import { AuthCard, Input, FormField, Button } from '@/components/ui/Input';
+import styles from './register.module.css';
 
 interface ApiError {
   response?: {
@@ -39,19 +37,32 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPass, setShowPass] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const setField = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
   const validate = (): boolean => {
     const e: FormErrors = {};
-    if (!form.full_name.trim()) e.full_name = 'Display name is required';
-    if (!form.phone.trim()) e.phone = 'phone is required';
-    else if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.phone)) e.phone = '3–20 chars, letters/numbers/underscores only';
-    if (!form.email) e.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email address';
-    if (!PASSWORD_RE.test(form.password)) e.password = 'Min 8 chars with uppercase, lowercase, and number';
-    if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
+    if (!form.full_name.trim()) e.full_name = 'Nome completo é obrigatório';
+    if (!form.phone.trim()) e.phone = 'Telefone é obrigatório';
+    else if (!/^[0-9]{9,12}$/.test(form.phone)) e.phone = '9-12 dígitos, apenas números';
+    if (!form.email) e.email = 'Email é obrigatório';
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Email inválido';
+    if (!PASSWORD_RE.test(form.password)) e.password = 'Mínimo 8 caracteres com maiúscula, minúscula e número';
+    if (form.password !== form.confirmPassword) e.confirmPassword = 'As senhas não coincidem';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -67,115 +78,131 @@ export default function RegisterPage() {
         email: form.email,
         password: form.password,
       });
-      router.push('/verify-email?email=' + encodeURIComponent(form.email));
+      if (profileImage) {
+        localStorage.setItem('tempUserAvatar', profileImage);
+      }
+      router.push('/views/auth/otp-verify?email=' + encodeURIComponent(form.email));
     } catch (err: unknown) {
-      setApiError((err as ApiError)?.response?.data?.error || 'Registration failed. Please try again.');
+      setApiError((err as ApiError)?.response?.data?.error || 'Falha no registo. Tente novamente.');
     }
   };
 
-  const strength = (() => {
-    const p = form.password;
-    let s = 0;
-    if (p.length >= 8) s++;
-    if (/[A-Z]/.test(p)) s++;
-    if (/[0-9]/.test(p)) s++;
-    if (/[^a-zA-Z0-9]/.test(p)) s++;
-    return s;
-  })();
-
   return (
-    <AuthCard title="Criar Conta" subtitle="Comece as conversas em segundos">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-5">
-        {apiError && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
-            {apiError}
-          </div>
-        )}
+    <div className={styles.container}>
+      <div className={styles.scrollArea}>
+        <div className={styles.box}>
+          <div className={styles.logo}>📝</div>
+          <h1 className={styles.title}>BulakutSongo</h1>
+          <p className={styles.subtitle}>Criar nova conta</p>
 
-        <FormField label="Nome Completo" error={errors.full_name}>
-          <Input
-            placeholder="How others see you"
-            value={form.full_name}
-            onChange={set('full_name')}
-            icon={<User size={15} />}
-            error={errors.full_name}
-          />
-        </FormField>
+          {apiError && <div className={styles.error}>{apiError}</div>}
 
-        <FormField label="phone" error={errors.phone}>
-          <Input
-            placeholder="your_handle"
-            value={form.phone}
-            onChange={set('phone')}
-            icon={<AtSign size={15} />}
-            error={errors.phone}
-            autoCapitalize="none"
-          />
-        </FormField>
-
-        <FormField label="Email" error={errors.email}>
-          <Input
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={set('email')}
-            icon={<Mail size={15} />}
-            error={errors.email}
-          />
-        </FormField>
-
-        <FormField label="Password" error={errors.password}>
-          <Input
-            type={showPass ? 'text' : 'password'}
-            placeholder="Create a strong password"
-            value={form.password}
-            onChange={set('password')}
-            icon={<Lock size={15} />}
-            error={errors.password}
-            rightIcon={
-              <button type="button" onClick={() => setShowPass(v => !v)} className="focus:outline-none">
-                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            }
-          />
-          {form.password && (
-            <div className="flex gap-1 mt-2">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                  i <= strength
-                    ? strength <= 1 ? 'bg-red-500'
-                    : strength === 2 ? 'bg-amber-500'
-                    : strength === 3 ? 'bg-yellow-400'
-                    : 'bg-green-500'
-                    : 'bg-zinc-800'
-                }`} />
-              ))}
+          {/* Avatar Section */}
+          <div className={styles.avatarSection}>
+            <div 
+              className={styles.avatarPreview} 
+              onClick={() => fileInputRef.current?.click()}
+              style={{ cursor: 'pointer' }}
+            >
+              {profileImage ? (
+                <img src={profileImage} alt="Perfil" className={styles.avatarImage} />
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  <span>📷</span>
+                  <span className={styles.avatarText}>Adicionar foto</span>
+                </div>
+              )}
             </div>
-          )}
-        </FormField>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/jpeg,image/png,image/jpg"
+              style={{ display: 'none' }}
+            />
+            <p className={styles.avatarHint}>Clique na imagem para adicionar foto (opcional)</p>
+          </div>
 
-        <FormField label="Confirm Password" error={errors.confirmPassword}>
-          <Input
-            type="password"
-            placeholder="Repeat your password"
-            value={form.confirmPassword}
-            onChange={set('confirmPassword')}
-            icon={<Lock size={15} />}
-            error={errors.confirmPassword}
-          />
-        </FormField>
+          {/* Nome completo */}
+          <div className={styles.inputGroup}>
+            <label>Nome completo <span className={styles.required}>*</span></label>
+            <input 
+              type="text" 
+              placeholder="Seu nome"
+              value={form.full_name}
+              onChange={setField('full_name')}
+            />
+            {errors.full_name && <span className={styles.fieldError}>{errors.full_name}</span>}
+          </div>
 
-        <Button type="submit" isLoading={isLoading} fullWidth>
-          Create Account
-        </Button>
+          {/* Telefone */}
+          <div className={styles.inputGroup}>
+            <label>Telefone <span className={styles.required}>*</span></label>
+            <input 
+              type="tel" 
+              placeholder="84 123 4567"
+              value={form.phone}
+              onChange={setField('phone')}
+            />
+            {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
+          </div>
 
-        <p className="text-center text-sm text-zinc-500">
-          Se ja tem conta?{' '}
-          <Link href="/views/auth/login" className="text-amber-500 hover:text-amber-400 font-medium transition-colors">
-            entrar
-          </Link>
-        </p>
-      </form>
-    </AuthCard>
+          {/* Email */}
+          <div className={styles.inputGroup}>
+            <label>Email <span className={styles.required}>*</span></label>
+            <input 
+              type="email" 
+              placeholder="seu@email.com"
+              value={form.email}
+              onChange={setField('email')}
+            />
+            {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+          </div>
+
+          {/* Senha */}
+          <div className={styles.inputGroup}>
+            <label>Senha <span className={styles.required}>*</span></label>
+            <div className={styles.passwordWrapper}>
+              <input 
+                type={showPass ? 'text' : 'password'} 
+                placeholder="Mínimo 8 caracteres"
+                value={form.password}
+                onChange={setField('password')}
+              />
+              <button 
+                type="button"
+                className={styles.passwordToggle}
+                onClick={() => setShowPass(!showPass)}
+              >
+                {showPass ? '🙈' : '👁️'}
+              </button>
+            </div>
+            {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
+          </div>
+
+          {/* Confirmar senha */}
+          <div className={styles.inputGroup}>
+            <label>Confirmar senha <span className={styles.required}>*</span></label>
+            <input 
+              type="password" 
+              placeholder="Repita a senha"
+              value={form.confirmPassword}
+              onChange={setField('confirmPassword')}
+            />
+            {errors.confirmPassword && <span className={styles.fieldError}>{errors.confirmPassword}</span>}
+          </div>
+
+          <button className={styles.button} onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? 'A criar conta...' : 'Criar conta'}
+          </button>
+
+          <div className={styles.divider}></div>
+
+          <div className={styles.links}>
+            <a href="/views/auth/login">Já tem conta? Entrar</a>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

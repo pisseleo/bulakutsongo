@@ -51,12 +51,11 @@ export default function ChatGroupPage() {
           conversation={activeConvo}
           onBack={() => setActiveConvo(null)}
         />
-        {/* Group info panel toggle */}
         <div className="w-px bg-zinc-900" />
         <button
           onClick={() => setShowManage(true)}
           className="flex-shrink-0 flex flex-col items-center justify-center w-10 bg-zinc-950 hover:bg-zinc-900 transition-colors border-l border-zinc-900"
-          title="Group info">
+          title="Informações do grupo">
           <Users size={16} className="text-zinc-500" />
         </button>
       </div>
@@ -80,11 +79,11 @@ export default function ChatGroupPage() {
       <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-900">
         <div className="flex items-center gap-2">
           <Users size={18} className="text-amber-500" />
-          <h1 className="font-bold text-sm">Groups</h1>
+          <h1 className="font-bold text-sm">Grupos</h1>
         </div>
         <Button onClick={() => setShowCreate(true)} variant="ghost" className="text-xs py-1.5 px-3 gap-1.5">
           <UserPlus size={14} />
-          New Group
+          Novo Grupo
         </Button>
       </div>
 
@@ -99,11 +98,11 @@ export default function ChatGroupPage() {
           <div className="flex flex-col items-center justify-center h-full gap-4 text-zinc-600 py-20">
             <Users size={40} strokeWidth={1} />
             <div className="text-center">
-              <p className="text-sm font-medium text-zinc-400">No groups yet</p>
-              <p className="text-xs mt-1">Create one to start collaborating</p>
+              <p className="text-sm font-medium text-zinc-400">Nenhum grupo ainda</p>
+              <p className="text-xs mt-1">Crie um para começar a colaborar</p>
             </div>
             <Button onClick={() => setShowCreate(true)} variant="ghost" className="text-xs">
-              <UserPlus size={14} /> Create your first group
+              <UserPlus size={14} /> Criar seu primeiro grupo
             </Button>
           </div>
         )}
@@ -129,14 +128,10 @@ function GroupListItem({ group, onClick }: { group: Conversation; onClick: () =>
       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-zinc-950 transition-colors text-left border-b border-zinc-900/50">
       <div className="relative flex-shrink-0">
         {group.isGroup && (
-<>
- <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
+          <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
             {initials}
           </div>
-</>
-        )
-         
-        }
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
@@ -150,7 +145,7 @@ function GroupListItem({ group, onClick }: { group: Conversation; onClick: () =>
         <p className="text-xs text-zinc-500 truncate mt-0.5">
           {group.lastMessage
             ? `${group.lastMessage.sender?.full_name}: ${group.lastMessage.content}`
-            : `${group.members.length} members`}
+            : `${group.members.length} membros`}
         </p>
       </div>
       {group.lastMessage?.isRead && (
@@ -204,21 +199,21 @@ function CreateGroupModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="w-full max-w-md bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-900">
-          <h2 className="font-bold text-sm">New Group</h2>
+          <h2 className="font-bold text-sm">Novo Grupo</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
             <X size={16} />
           </button>
         </div>
 
         <div className="p-5 flex flex-col gap-4">
-          <FormField label="Group Name">
+          <FormField label="Nome do Grupo">
             <Input value={name} onChange={e => setName(e.target.value)}
-              placeholder="e.g. Design Team" icon={<Users size={15} />} />
+              placeholder="Ex: Equipa de Design" icon={<Users size={15} />} />
           </FormField>
 
-          <FormField label={`Add Members${selected.length ? ` (${selected.length})` : ''}`}>
+          <FormField label={`Adicionar Membros${selected.length ? ` (${selected.length})` : ''}`}>
             <Input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search users..." icon={<Search size={15} />} />
+              placeholder="Pesquisar utilizadores..." icon={<Search size={15} />} />
           </FormField>
 
           {/* Selected chips */}
@@ -237,7 +232,7 @@ function CreateGroupModal({
 
           {/* Search results */}
           <div className="max-h-48 overflow-y-auto -mx-5 px-5 flex flex-col gap-1">
-            {loading && <p className="text-xs text-zinc-600 text-center py-3">Searching...</p>}
+            {loading && <p className="text-xs text-zinc-600 text-center py-3">A pesquisar...</p>}
             {users.map(u => {
               const isSel = selected.some(s => s.id === u.id);
               return (
@@ -262,10 +257,10 @@ function CreateGroupModal({
         </div>
 
         <div className="px-5 pb-5 flex gap-2">
-          <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
+          <Button onClick={onClose} variant="ghost" fullWidth>Cancelar</Button>
           <Button onClick={handleCreate} isLoading={creating} fullWidth
             disabled={!name.trim() || selected.length === 0}>
-            Create Group
+            Criar Grupo
           </Button>
         </div>
       </div>
@@ -322,7 +317,7 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
         <button onClick={onBack} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">
           <ArrowLeft size={16} />
         </button>
-        <h2 className="font-bold text-sm">Group Info</h2>
+        <h2 className="font-bold text-sm">Informações do Grupo</h2>
       </div>
 
       {/* Group header */}
@@ -332,16 +327,16 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
         </div>
         <div className="text-center">
           <h3 className="font-bold">{conversation.name}</h3>
-          <p className="text-xs text-zinc-500">{conversation.members.length} members</p>
+          <p className="text-xs text-zinc-500">{conversation.members.length} membros</p>
         </div>
       </div>
 
       {/* Add member (admin only) */}
       {isAdmin && (
         <div className="px-4 py-3 border-b border-zinc-900">
-          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-2">Add Members</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-2">Adicionar Membros</p>
           <Input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search to add..." icon={<Search size={14} />} />
+            placeholder="Pesquisar para adicionar..." icon={<Search size={14} />} />
           {users.length > 0 && (
             <div className="mt-2 flex flex-col gap-1 max-h-32 overflow-y-auto">
               {users.map(u => (
@@ -361,7 +356,7 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
 
       {/* Members list */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-3">Members</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-3">Membros</p>
         <div className="flex flex-col gap-1">
           {conversation.members.map(member => (
             <div key={member.userId}

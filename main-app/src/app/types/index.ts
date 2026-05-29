@@ -48,6 +48,7 @@ export interface VerifyAccountPayload {
  
 export interface ResendOtpPayload {
   email: string;
+  purpose: string;
 }
  
 export interface ForgotPasswordPayload {

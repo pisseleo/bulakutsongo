@@ -47,7 +47,7 @@ export const login = async (email: string, password: string) => {
       process.env.JWT_SECRET!,
       { expiresIn: '5m' }
     );
-    return { requires2FA: true, tempToken };
+    return { requires2FA: true, user: user, tempToken };
   }
 
   // No 2FA → issue final access token

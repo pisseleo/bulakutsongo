@@ -1,331 +1,437 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import Image from 'next/image';
-import {
-  Camera, User, Mail, Shield, ShieldCheck, ShieldOff,
-  Copy, Check, LogOut, Trash2, Key, ChevronRight
-} from 'lucide-react';
-import { useAuth } from '@/context/Auth.context';
-import { Input, Button, FormField, OtpInput } from '@components/ui/Input';
-import { uploadFile } from '@/services/chat.service';
-import apiClient from '@/services/apiClient';
-import clsx from 'clsx';
+import { useState, useEffect, useRef } from 'react';
+import styles from '@/views/chat/chat/chat.module.css';
 
-type Tab = 'profile' | 'security';
+type ChatType = {
+  id: number;
+  name: string;
+  avatar: string;
+  type: 'public' | 'private' | 'user';
+  members?: number[];
+  userId?: number;
+  online?: boolean;
+};
 
-export default function UserProfilePage() {
-  const { user} = useAuth();
-  const [tab, setTab] = useState<Tab>('profile');
+type MessageType = {
+  id: number;
+  text: string;
+  sender: string;
+  time: string;
+  file?: string;
+  fileName?: string;
+  isAudio?: boolean;
+};
+
+type UserType = {
+  id: number;
+  name: string;
+  avatar: string;
+  email: string;
+  online: boolean;
+};
+
+export default function Chat() {
+  const [userName, setUserName] = useState('');
+  const [selectedChat, setSelectedChat] = useState<ChatType | null>(null);
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Record<number, MessageType[]>>({});
+  const [isRecording, setIsRecording] = useState(false);
+  const [groups, setGroups] = useState<ChatType[]>([]);
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [activeTab, setActiveTab] = useState<'groups' | 'users'>('groups');
+  const [sidebarOpen, setSidebarOpen] = useState(false); // ← new state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const currentUser: UserType = { id: 1, name: 'João Silva', avatar: '😎', email: 'joao@email.com', online: true };
+
+  // Toggle sidebar
+  const toggleSidebar = () => setSidebarOpen(prev => !prev);
+  const closeSidebar = () => setSidebarOpen(false);
+
+  // Auto‑close sidebar on window resize (if becomes desktop)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Load data from localStorage
+  useEffect(() => {
+    const name = localStorage.getItem('userName') || localStorage.getItem('tempUserName') || 'Usuário';
+    setUserName(name);
+    
+    const savedGroups = localStorage.getItem('groups');
+    if (savedGroups) {
+      setGroups(JSON.parse(savedGroups));
+    } else {
+      const defaultGroups: ChatType[] = [
+        { id: 1, name: 'Chat Geral', avatar: '🌍', type: 'public', members: [1,2,3,4,5] },
+        { id: 2, name: 'Trabalho', avatar: '💼', type: 'private', members: [1,2,3] },
+        { id: 3, name: 'Família', avatar: '👨‍👩‍👧', type: 'private', members: [1,4] },
+      ];
+      setGroups(defaultGroups);
+      localStorage.setItem('groups', JSON.stringify(defaultGroups));
+    }
+
+    const savedUsers = localStorage.getItem('users');
+    if (savedUsers) {
+      setUsers(JSON.parse(savedUsers));
+    } else {
+      const defaultUsers: UserType[] = [
+        { id: 2, name: 'Maria Silva', avatar: '👩', email: 'maria@email.com', online: true },
+        { id: 3, name: 'João Carlos', avatar: '👨', email: 'joaoc@email.com', online: false },
+        { id: 4, name: 'Ana Santos', avatar: '👧', email: 'ana@email.com', online: true },
+        { id: 5, name: 'Pedro Costa', avatar: '👦', email: 'pedro@email.com', online: false },
+        { id: 6, name: 'Carla Mendes', avatar: '👩‍🦱', email: 'carla@email.com', online: true },
+      ];
+      setUsers(defaultUsers);
+      localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
+
+    const interval = setInterval(() => {
+      setUsers(prevUsers => 
+        prevUsers.map(user => ({
+          ...user,
+          online: Math.random() > 0.5
+        }))
+      );
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSendMessage = (text?: string, file?: File, isAudio?: boolean, audioBlob?: Blob) => {
+    if (!selectedChat) return;
+
+    let messageText = text || message;
+    let fileUrl = '';
+    let fileName = '';
+
+    if (file) {
+      fileUrl = URL.createObjectURL(file);
+      fileName = file.name;
+      messageText = `📎 ${file.name}`;
+    }
+
+    if (isAudio && audioBlob) {
+      fileUrl = URL.createObjectURL(audioBlob);
+      messageText = `🎤 Mensagem de voz`;
+    }
+
+    if (!messageText.trim() && !file && !isAudio) return;
+
+    const newMsg: MessageType = {
+      id: Date.now(),
+      text: messageText,
+      sender: 'me',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      file: fileUrl,
+      fileName: fileName,
+      isAudio: isAudio
+    };
+
+    const currentMsgs = messages[selectedChat.id] || [];
+    
+    setMessages({
+      ...messages,
+      [selectedChat.id]: [...currentMsgs, newMsg]
+    });
+    setMessage('');
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && selectedChat) {
+      handleSendMessage('', file);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (selectedChat) {
+          handleSendMessage('', undefined, true, audioBlob);
+        }
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          stopRecording();
+        }
+      }, 30000);
+    } catch (error) {
+      alert('Permita o acesso ao microfone');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userName');
+    localStorage.removeItem('tempUserName');
+    window.location.href = '/login';
+  };
+
+  const getVisibleGroups = () => {
+    return groups.filter(group => {
+      if (group.type === 'public') return true;
+      return group.members?.includes(currentUser.id);
+    });
+  };
+
+  const startUserChat = (user: UserType) => {
+    const chatId = 1000 + user.id;
+    const userChat: ChatType = {
+      id: chatId,
+      name: user.name,
+      avatar: user.avatar,
+      type: 'user',
+      userId: user.id,
+      online: user.online
+    };
+    setSelectedChat(userChat);
+    // Close sidebar on mobile after selecting a chat
+    if (window.innerWidth <= 768) closeSidebar();
+  };
+
+  const selectGroup = (chat: ChatType) => {
+    setSelectedChat(chat);
+    if (window.innerWidth <= 768) closeSidebar();
+  };
+
+  const onlineUsers = users.filter(user => user.online);
+  const offlineUsers = users.filter(user => !user.online);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-zinc-900 px-6 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-black" stroke="currentColor" strokeWidth="2.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <span className="font-bold tracking-tight">{user?.full_name}</span>
-        <span className="text-zinc-700 ml-1">/</span>
-        <span className="text-zinc-400 text-sm">Perfil</span>
-      </div>
+    <div className={styles.container}>
+      {/* Hamburger menu button - visible only on mobile */}
+      <button className={styles.menuToggle} onClick={toggleSidebar}>
+        ☰
+      </button>
 
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        {/* Avatar section */}
-        <AvatarSection />
+      {/* Overlay - click to close sidebar on mobile */}
+      <div 
+        className={`${styles.sidebarOverlay} ${sidebarOpen ? styles.sidebarOverlayOpen : ''}`}
+        onClick={closeSidebar}
+      />
 
-        {/* Tabs */}
-        <div className="flex gap-1 mt-8 mb-6 bg-zinc-950 border border-zinc-900 rounded-xl p-1">
-          {(['profile', 'security'] as Tab[]).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={clsx(
-                'flex-1 py-2 text-sm font-medium rounded-lg transition-all capitalize',
-                tab === t
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-500 hover:text-zinc-300'
-              )}>
-              {t}
+      {/* Main Sidebar */}
+      <div className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+        <div className={styles.header}>
+          <div className={styles.userInfo}>
+            <div className={styles.avatar}>{currentUser.avatar}</div>
+            <span>{userName}</span>
+          </div>
+          <div className={styles.headerActions}>
+            <button className={styles.groupBtn} onClick={() => window.location.href = '/create-group'}>
+              ➕
             </button>
-          ))}
+            <button className={styles.logoutBtn} onClick={handleLogout}>
+              🚪
+            </button>
+          </div>
         </div>
 
-        {tab === 'profile' && <ProfileTab />}
-        {tab === 'security' && <SecurityTab />}
+        <div className={styles.tabs}>
+          <button 
+            className={`${styles.tab} ${activeTab === 'groups' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('groups')}
+          >
+            👥 Grupos
+          </button>
+          <button 
+            className={`${styles.tab} ${activeTab === 'users' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            👤 Utilizadores
+          </button>
+        </div>
+
+        <div className={styles.search}>
+          <input type="text" placeholder="Pesquisar..." />
+        </div>
+
+        <div className={styles.conversationsList}>
+          {activeTab === 'groups' ? (
+            getVisibleGroups().map((chat) => (
+              <div 
+                key={chat.id} 
+                className={styles.conversationItem} 
+                onClick={() => selectGroup(chat)}
+              >
+                <div className={styles.conversationAvatar}>{chat.avatar}</div>
+                <div className={styles.conversationInfo}>
+                  <div className={styles.conversationName}>
+                    {chat.name}
+                    <span className={`${styles.groupBadge} ${chat.type === 'public' ? styles.publicBadge : styles.privateBadge}`}>
+                      {chat.type === 'public' ? 'Público' : 'Privado'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <>
+              {onlineUsers.length > 0 && (
+                <div className={styles.sectionHeader}>
+                  <span>🟢 Online ({onlineUsers.length})</span>
+                </div>
+              )}
+              {onlineUsers.map((user) => (
+                <div 
+                  key={user.id} 
+                  className={styles.conversationItem} 
+                  onClick={() => startUserChat(user)}
+                >
+                  <div className={styles.conversationAvatar}>{user.avatar}</div>
+                  <div className={styles.conversationInfo}>
+                    <div className={styles.conversationName}>
+                      {user.name}
+                      <span className={styles.onlineBadge}>🟢 Online</span>
+                    </div>
+                    <div className={styles.conversationLastMsg}>{user.email}</div>
+                  </div>
+                </div>
+              ))}
+              {offlineUsers.length > 0 && (
+                <div className={styles.sectionHeader}>
+                  <span>⚫ Offline ({offlineUsers.length})</span>
+                </div>
+              )}
+              {offlineUsers.map((user) => (
+                <div 
+                  key={user.id} 
+                  className={styles.conversationItem} 
+                  onClick={() => startUserChat(user)}
+                  style={{ opacity: 0.6 }}
+                >
+                  <div className={styles.conversationAvatar}>{user.avatar}</div>
+                  <div className={styles.conversationInfo}>
+                    <div className={styles.conversationName}>
+                      {user.name}
+                      <span className={styles.offlineBadge}>⚫ Offline</span>
+                    </div>
+                    <div className={styles.conversationLastMsg}>{user.email}</div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
 
-// ─── Avatar Section ───────────────────────────────────────────────────────────
-
-function AvatarSection() {
-  const { user, updateUser } = useAuth();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const result = await uploadFile(file);
-      await apiClient.put('/users/me', { profile_picture_url: result.url });
-      updateUser({ profile_picture_url: result.url });
-    } catch {}
-    finally { setUploading(false); }
-  };
-
-  return (
-    <div className="flex items-center gap-5">
-      <div className="relative flex-shrink-0">
-        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800">
-          {user?.profile_picture_url
-            ? <Image src={user.profile_picture_url} alt={user.full_name} width={80} height={80} className="object-cover w-full h-full" />
-            : <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-zinc-600">
-              {user?.full_name?.[0]?.toUpperCase()}
+      {/* Chat Area */}
+      <div className={styles.chatArea}>
+        {selectedChat ? (
+          <>
+            <div className={styles.chatHeader}>
+              <div className={styles.avatar}>{selectedChat.avatar}</div>
+              <div>
+                <h3>{selectedChat.name}</h3>
+                {selectedChat.type === 'user' && (
+                  <small>
+                    {selectedChat.online ? '🟢 Online' : '⚫ Offline'}
+                  </small>
+                )}
+                {selectedChat.type === 'public' && (
+                  <small>Grupo Público - Todos podem entrar</small>
+                )}
+                {selectedChat.type === 'private' && (
+                  <small>Grupo Privado</small>
+                )}
+              </div>
             </div>
-          }
-        </div>
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-400 flex items-center justify-center transition-colors shadow-lg">
-          <Camera size={13} className="text-black" />
-        </button>
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-      </div>
-      <div>
-        <h1 className="text-xl font-bold">{user?.full_name}</h1>
-        <p className="text-sm text-zinc-500">@{user?.email}</p>
-        <div className="flex items-center gap-1.5 mt-1">
-          {user?.is_verified
-            ? <span className="flex items-center gap-1 text-xs text-green-400"><ShieldCheck size={12} />Verificado</span>
-            : <span className="flex items-center gap-1 text-xs text-amber-500"><Shield size={12} />Nao Verificado</span>
-          }
-        </div>
-      </div>
-    </div>
-  );
-}
 
-// ─── Profile Tab ──────────────────────────────────────────────────────────────
-
-function ProfileTab() {
-  const { user, updateUser } = useAuth();
-  const [form, setForm] = useState({
-    displayName: user?.full_name || '',
-    username: user?.email || '',
-  });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const { data } = await apiClient.put('/users/me', form);
-      updateUser(data.data);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {} finally { setSaving(false); }
-  };
-
-  return (
-    <form onSubmit={handleSave} className="flex flex-col gap-5">
-      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-6 flex flex-col gap-5">
-        <FormField label="Display Name">
-          <Input value={form.displayName} onChange={e => setForm(f => ({ ...f, displayName: e.target.value }))}
-            icon={<User size={15} />} />
-        </FormField>
-        <FormField label="Username">
-          <Input value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-            icon={<span className="text-zinc-500 text-sm">@</span>} />
-        </FormField>
-        <FormField label="Email">
-          <Input type="email" value={user?.email || ''} disabled
-            icon={<Mail size={15} />}
-            className="opacity-50 cursor-not-allowed" />
-        </FormField>
-        {/* <FormField label="Bio" hint="Tell others a little about yourself">
-          <textarea
-            value={form.bio}
-            onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
-            rows={3}
-            maxLength={200}
-            placeholder="Optional bio..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 outline-none resize-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
-          />
-        </FormField> */}
-      </div>
-
-      <Button type="submit" isLoading={saving} className={saved ? 'bg-green-500 hover:bg-green-500' : ''}>
-        {saved ? <><Check size={15} />Saved</> : 'Save Changes'}
-      </Button>
-    </form>
-  );
-}
-
-// ─── Security Tab ─────────────────────────────────────────────────────────────
-
-function SecurityTab() {
-  const { user, getTotpSetup, confirmTotp, removeTotp, logout, logoutAll } = useAuth();
-
-  const [totpSetup, setTotpSetup] = useState<{ secret: string; qrCode: string; backupCodes: string[] } | null>(null);
-  const [totpCode, setTotpCode] = useState('');
-  const [backupCodes, setBackupCodes] = useState<string[]>([]);
-  const [totpLoading, setTotpLoading] = useState(false);
-  const [totpError, setTotpError] = useState('');
-  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
-
-  const handleSetupTotp = async () => {
-    setTotpLoading(true);
-    try {
-      const setup = await getTotpSetup();
-      setTotpSetup(setup);
-    } catch {} finally { setTotpLoading(false); }
-  };
-
-  const handleConfirmTotp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTotpError('');
-    setTotpLoading(true);
-    try {
-      const result = await confirmTotp({ totpCode });
-      setBackupCodes(result.backupCodes);
-      setTotpSetup(null);
-    } catch (err: any) {
-      setTotpError(err?.response?.data?.error || 'Invalid code');
-    } finally { setTotpLoading(false); }
-  };
-
-  const handleRemoveTotp = async () => {
-    setTotpLoading(true);
-    try {
-      await removeTotp();
-      setShowRemoveConfirm(false);
-    } catch {} finally { setTotpLoading(false); }
-  };
-
-  const copyCode = (code: string, i: number) => {
-    navigator.clipboard.writeText(code);
-    setCopiedIdx(i);
-    setTimeout(() => setCopiedIdx(null), 1500);
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      {/* 2FA Section */}
-      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center',
-              user?.is_2fa_enabled ? 'bg-green-500/10' : 'bg-zinc-900')}>
-              {user?.is_2fa_enabled
-                ? <ShieldCheck size={20} className="text-green-400" />
-                : <Shield size={20} className="text-zinc-500" />
-              }
+            <div className={styles.messagesArea}>
+              {(messages[selectedChat.id] || []).map((msg: MessageType) => (
+                <div 
+                  key={msg.id} 
+                  className={`${styles.message} ${msg.sender === 'me' ? styles.messageSent : styles.messageReceived}`}
+                >
+                  {msg.file && msg.isAudio ? (
+                    <audio controls src={msg.file} className={styles.audioPlayer} />
+                  ) : msg.file ? (
+                    <div>
+                      {msg.text}
+                      {msg.fileName?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                        <img src={msg.file} alt="imagem" className={styles.previewImage} />
+                      ) : (
+                        <a href={msg.file} download={msg.fileName} className={styles.fileLink}>
+                          📄 Baixar {msg.fileName}
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <div className={styles.messageText}>{msg.text}</div>
+                  )}
+                  <div className={styles.messageTime}>{msg.time}</div>
+                </div>
+              ))}
             </div>
+
+            <div className={styles.inputArea}>
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+              />
+              <button onClick={() => fileInputRef.current?.click()}>📎</button>
+              <button 
+                onClick={isRecording ? stopRecording : startRecording}
+                style={{ color: isRecording ? 'red' : '#075E54' }}
+              >
+                {isRecording ? '🔴' : '🎤'}
+              </button>
+              <input 
+                type="text" 
+                placeholder="Digite sua mensagem..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <button className={styles.sendBtn} onClick={() => handleSendMessage()}>➤</button>
+            </div>
+          </>
+        ) : (
+          <div className={styles.emptyChat}>
             <div>
-              <h3 className="text-sm font-semibold">Two-Factor Authentication</h3>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                {user?.is_2fa_enabled ? 'Active — your account is extra secure' : 'Add an extra layer of security'}
+              <div style={{ fontSize: '60px' }}>💬</div>
+              <h3>BulakutSongo</h3>
+              <p>Selecione um grupo ou utilizador para começar</p>
+              <p style={{ fontSize: '12px', marginTop: '10px' }}>
+                👥 Grupos públicos - Todos podem entrar<br />
+                🔒 Grupos privados - Apenas convidados<br />
+                👤 Utilizadores online - Conversas individuais
               </p>
             </div>
           </div>
-          <div className={clsx('text-xs font-semibold px-2.5 py-1 rounded-full',
-            user?.is_2fa_enabled ? 'bg-green-500/10 text-green-400' : 'bg-zinc-900 text-zinc-500')}>
-            {user?.is_2fa_enabled ? 'Enabled' : 'Disabled'}
-          </div>
-        </div>
-
-        {/* Backup codes after enabling */}
-        {backupCodes.length > 0 && (
-          <div className="mt-4 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-            <p className="text-xs font-semibold text-amber-400 mb-3 uppercase tracking-wider">
-              Save your backup codes
-            </p>
-            <div className="grid grid-cols-2 gap-1.5 mb-3">
-              {backupCodes.map((code, i) => (
-                <button key={i} onClick={() => copyCode(code, i)}
-                  className="flex items-center justify-between px-3 py-2 bg-zinc-900 rounded-lg text-xs font-mono text-zinc-300 hover:bg-zinc-800 transition-colors">
-                  {code}
-                  {copiedIdx === i ? <Check size={11} className="text-green-400" /> : <Copy size={11} className="text-zinc-600" />}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-zinc-600">Store these safely. Each code can only be used once.</p>
-          </div>
         )}
-
-        {/* TOTP Setup flow */}
-        {totpSetup && !user?.is_2fa_enabled && (
-          <div className="mt-4 flex flex-col gap-4">
-            <div className="bg-zinc-900 rounded-xl p-4 flex flex-col items-center gap-3">
-              <img src={totpSetup.qrCode} alt="TOTP QR Code" className="w-40 h-40 rounded-lg" />
-              <div className="text-center">
-                <p className="text-xs text-zinc-500 mb-1">Or enter manually</p>
-                <code className="text-xs bg-zinc-800 px-3 py-1.5 rounded-lg text-amber-400 font-mono">
-                  {totpSetup.secret}
-                </code>
-              </div>
-            </div>
-            <form onSubmit={handleConfirmTotp} className="flex flex-col gap-3">
-              <p className="text-xs text-zinc-400 text-center">Enter the 6-digit code from your authenticator app</p>
-              <OtpInput length={6} value={totpCode} onChange={setTotpCode} error={totpError} />
-              <Button type="submit" isLoading={totpLoading} fullWidth disabled={totpCode.length < 6}>
-                Enable 2FA
-              </Button>
-            </form>
-          </div>
-        )}
-
-        {/* Actions */}
-        {!totpSetup && (
-          <div className="mt-4">
-            {!user?.is_2fa_enabled ? (
-              <Button onClick={handleSetupTotp} isLoading={totpLoading} variant="ghost" fullWidth>
-                <Key size={15} />
-                Set up authenticator app
-                <ChevronRight size={15} className="ml-auto" />
-              </Button>
-            ) : (
-              <>
-                {!showRemoveConfirm ? (
-                  <Button onClick={() => setShowRemoveConfirm(true)} variant="danger" fullWidth>
-                    <ShieldOff size={15} />
-                    Disable 2FA
-                  </Button>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm text-zinc-400 text-center">Are you sure? This will remove 2FA from your account.</p>
-                    <div className="flex gap-2">
-                      <Button onClick={() => setShowRemoveConfirm(false)} variant="ghost" fullWidth>Cancel</Button>
-                      <Button onClick={handleRemoveTotp} isLoading={totpLoading} variant="danger" fullWidth>
-                        Yes, disable
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Session management */}
-      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-6 flex flex-col gap-3">
-        <h3 className="text-sm font-semibold">Sessions</h3>
-        <Button onClick={() => logout()} variant="ghost" fullWidth>
-          <LogOut size={15} />
-          Sign out of this device
-        </Button>
-        <Button onClick={() => logoutAll()} variant="danger" fullWidth>
-          <Trash2 size={15} />
-          Sign out of all devices
-        </Button>
       </div>
     </div>
   );

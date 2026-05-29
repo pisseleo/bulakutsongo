@@ -1,0 +1,136 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #128C7E;
+  font-family: Arial, sans-serif;
+}
+
+.box {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.logo {
+  font-size: 60px;
+  margin-bottom: 10px;
+}
+
+.title {
+  color: #075E54;
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 25px;
+}
+
+.inputGroup {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #f9f9f9;
+  color: #000;
+  font-weight: normal;
+  box-sizing: border-box;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #128C7E;
+  background: white;
+  box-shadow: 0 0 5px rgba(18, 140, 126, 0.5);
+}
+
+.button {
+  width: 100%;
+  padding: 14px;
+  background: #128C7E;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.button:hover {
+  background: #075E54;
+}
+
+.button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.links {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.links a {
+  color: #128C7E;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  margin: 20px 0;
+  height: 1px;
+  background: #eee;
+}
+
+.error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 15px;
+  text-align: center;
+  border: 1px solid #f5c6cb;
+}
+
+.backupBtn {
+  background: none;
+  border: none;
+  color: #128C7E;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 15px;
+  text-decoration: underline;
+}
+
+.backupBtn:hover {
+  color: #075E54;
+}

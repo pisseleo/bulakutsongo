@@ -39,15 +39,22 @@ export const resendOtp = async (payload: ResendOtpPayload) => {
 // POST /auth/login
 export const login = async (payload: LoginPayload) => {
   const { data } = await apiClient.post<
-    ApiResponse<{ user: User; tokens: AuthTokens } | { requires2FA: true; userId: string }>
+    ApiResponse<{ user: User; accessToken: string; refreshToken: string; expiresIn: number } | { requires2FA: true; user: User }>
   >('/auth/login', payload);
 
-  if (data.data && 'tokens' in data.data) {
-    saveTokens(data.data.tokens);
+  if (data.data && 'accessToken' in data.data) {
+    
+    const tokens = {
+      accessToken: data.data.accessToken,
+      refreshToken: data.data.refreshToken,
+    };
+    localStorage.setItem('user', JSON.stringify(data.data.user));
+    saveTokens(tokens);
+    return { user: data.data.user, tokens, requires2FA: false };
   }
-  return data.data!;
+  // 2FA case
+  return { requires2FA: true, userId: data.data?.user.id };
 };
-
 // POST /auth/login/2fa
 export const loginWith2FA = async (payload: Login2FAPayload) => {
   const { data } = await apiClient.post<ApiResponse<{ user: User; tokens: AuthTokens }>>(
@@ -55,7 +62,7 @@ export const loginWith2FA = async (payload: Login2FAPayload) => {
     payload
   );
   if (data.data?.tokens) saveTokens(data.data.tokens);
-  return data.data!;
+  return { user: data.data?.user, tokens: data.data?.tokens };
 };
 
 // POST /auth/refresh

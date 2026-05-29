@@ -18,8 +18,8 @@ import apiClient from '../services/apiClient';
 
 type Action =
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'LOGIN_SUCCESS'; payload: { user: User; tokens: AuthTokens } }
-  | { type: 'REQUIRES_2FA'; payload: { userId: string } }
+  | { type: 'LOGIN_SUCCESS'; payload: { user?: User; tokens?: AuthTokens } }
+  | { type: 'REQUIRES_2FA'; payload: { userId?: string } }
   | { type: 'LOGOUT' }
   | { type: 'UPDATE_USER'; payload: Partial<User> }
   | { type: 'SET_VERIFIED' };
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const tokens: AuthTokens = JSON.parse(raw);
-        const { data } = await apiClient.get<{ data: User }>('/auth/me', {
+        const { data } = await apiClient.get<{ data: User }>('/users/me', {
           headers: { Authorization: `Bearer ${tokens.accessToken}` },
         });
         dispatch({ type: 'LOGIN_SUCCESS', payload: { user: data.data, tokens } });
@@ -135,20 +135,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    dispatch({ type: 'SET_LOADING', payload: true });
-    try {
-      const result = await authService.login(payload);
-      if ('requires2FA' in result && result.requires2FA) {
-        dispatch({ type: 'REQUIRES_2FA', payload: { userId: result.userId } });
-        return { requires2FA: true };
-      }
-      dispatch({ type: 'LOGIN_SUCCESS', payload: result as { user: User; tokens: AuthTokens } });
+ const login = useCallback(async (payload: LoginPayload) => {
+  dispatch({ type: 'SET_LOADING', payload: true });
+  try {
+    const result = await authService.login(payload);
+    console.log(result)
+    if ('requires2FA' in result && result.requires2FA) {
+      dispatch({ type: 'REQUIRES_2FA', payload: { userId: result?.userId } });
+
       return { requires2FA: false };
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, []);
+    // result contains { user, tokens }
+    dispatch({ type: 'LOGIN_SUCCESS', payload: { user: result?.user, tokens: result?.tokens } });
+    return { requires2FA: false };
+  } finally {
+    dispatch({ type: 'SET_LOADING', payload: false });
+  }
+}, []);
 
   const loginWith2FA = useCallback(async (payload: Login2FAPayload) => {
     dispatch({ type: 'SET_LOADING', payload: true });

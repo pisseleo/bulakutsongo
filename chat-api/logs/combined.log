@@ -108,3 +108,789 @@ Argument `full_name` is missing.
     at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
     at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
     at async register (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:21:16)
+2026-05-28 10:19:48 [info] Firebase Admin SDK initialised
+2026-05-28 10:19:49 [info] Redis connected
+2026-05-28 10:24:36 [error] [POST] /api/auth/register
+Error: connect ECONNREFUSED 127.0.0.1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+2026-05-28 10:33:43 [error] [POST] /api/auth/register
+Error: connect ECONNREFUSED 127.0.0.1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+2026-05-28 10:34:24 [info] Firebase Admin SDK initialised
+2026-05-28 10:34:25 [info] Redis connected
+2026-05-28 10:35:12 [error] [POST] /api/auth/register
+Error: Can't send mail - all recipients were rejected: 550-Verification failed for <no-reply@chatapp.com>
+550-The mail server does not recognize no-reply@chatapp.com as a valid sender.
+550 Sender verify failed
+    at SMTPConnection._formatError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+    at SMTPConnection._actionRCPT (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:1678:28)
+    at SMTPConnection.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:1631:30)
+    at SMTPConnection._processResponse (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+    at SMTPConnection._onData (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+    at TLSSocket.SMTPConnection._onSocketData (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:195:44)
+    at TLSSocket.emit (node:events:519:28)
+    at TLSSocket.emit (node:domain:489:12)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2026-05-28 10:36:40 [error] [POST] /api/auth/register
+Error: Can't send mail - all recipients were rejected: 550-Verification failed for <no-reply@chatapp.com>
+550-The mail server does not recognize no-reply@chatapp.com as a valid sender.
+550 Sender verify failed
+    at SMTPConnection._formatError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+    at SMTPConnection._actionRCPT (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:1678:28)
+    at SMTPConnection.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:1631:30)
+    at SMTPConnection._processResponse (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+    at SMTPConnection._onData (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+    at TLSSocket.SMTPConnection._onSocketData (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/nodemailer/lib/smtp-connection/index.js:195:44)
+    at TLSSocket.emit (node:events:519:28)
+    at TLSSocket.emit (node:domain:489:12)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2026-05-28 10:37:45 [info] Firebase Admin SDK initialised
+2026-05-28 10:37:45 [info] Redis connected
+2026-05-28 10:38:18 [info] Email sent to leochima@gmail.com: Verify your ChatApp account
+2026-05-28 10:43:31 [error] Prisma error 
+Invalid `prisma.user.findUnique()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:50:34
+
+  47 // ── Resend OTP ────────────────────────────────────────────────────────────────
+  48 export async function resendOtp(req: Request, res: Response): Promise<void> {
+  49   const { userId, purpose } = req.body as { userId: string; purpose: string };
+→ 50   const user = await prisma.user.findUnique({
+         where: {
+           id: undefined,
+       ?   email?: String,
+       ?   AND?: UserWhereInput | UserWhereInput[],
+       ?   OR?: UserWhereInput[],
+       ?   NOT?: UserWhereInput | UserWhereInput[],
+       ?   full_name?: StringFilter | String,
+       ?   password?: StringFilter | String,
+       ?   is_verified?: BoolFilter | Boolean,
+       ?   is_2fa_enabled?: BoolFilter | Boolean,
+       ?   created_at?: DateTimeFilter | DateTime,
+       ?   passwordResetTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+       ?   phone?: StringNullableFilter | String | Null,
+       ?   profile_picture_url?: StringNullableFilter | String | Null,
+       ?   status?: StringNullableFilter | String | Null,
+       ?   last_seen?: DateTimeNullableFilter | DateTime | Null,
+       ?   fcm_tokens?: StringNullableListFilter,
+       ?   roles?: RoleListRelationFilter,
+       ?   sent_messages?: MessageListRelationFilter,
+       ?   conversationMember?: ConversationMemberListRelationFilter,
+       ?   twofa?: User2FANullableRelationFilter | User2FAWhereInput | Null,
+       ?   sessions?: SessionListRelationFilter,
+       ?   conversations?: ConversationListRelationFilter,
+       ?   notifications?: NotificationListRelationFilter,
+       ?   passwordResetToken?: PasswordResetTokenListRelationFilter
+         },
+         select: {
+           email: true
+         }
+       })
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+2026-05-28 10:43:31 [error] [POST] /api/auth/resend-otp
+PrismaClientValidationError: 
+Invalid `prisma.user.findUnique()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:50:34
+
+  47 // ── Resend OTP ────────────────────────────────────────────────────────────────
+  48 export async function resendOtp(req: Request, res: Response): Promise<void> {
+  49   const { userId, purpose } = req.body as { userId: string; purpose: string };
+→ 50   const user = await prisma.user.findUnique({
+         where: {
+           id: undefined,
+       ?   email?: String,
+       ?   AND?: UserWhereInput | UserWhereInput[],
+       ?   OR?: UserWhereInput[],
+       ?   NOT?: UserWhereInput | UserWhereInput[],
+       ?   full_name?: StringFilter | String,
+       ?   password?: StringFilter | String,
+       ?   is_verified?: BoolFilter | Boolean,
+       ?   is_2fa_enabled?: BoolFilter | Boolean,
+       ?   created_at?: DateTimeFilter | DateTime,
+       ?   passwordResetTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+       ?   phone?: StringNullableFilter | String | Null,
+       ?   profile_picture_url?: StringNullableFilter | String | Null,
+       ?   status?: StringNullableFilter | String | Null,
+       ?   last_seen?: DateTimeNullableFilter | DateTime | Null,
+       ?   fcm_tokens?: StringNullableListFilter,
+       ?   roles?: RoleListRelationFilter,
+       ?   sent_messages?: MessageListRelationFilter,
+       ?   conversationMember?: ConversationMemberListRelationFilter,
+       ?   twofa?: User2FANullableRelationFilter | User2FAWhereInput | Null,
+       ?   sessions?: SessionListRelationFilter,
+       ?   conversations?: ConversationListRelationFilter,
+       ?   notifications?: NotificationListRelationFilter,
+       ?   passwordResetToken?: PasswordResetTokenListRelationFilter
+         },
+         select: {
+           email: true
+         }
+       })
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+    at wn (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at $n.handleRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6958)
+    at $n.handleAndLogRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async resendOtp (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:50:16)
+2026-05-28 10:47:35 [info] Firebase Admin SDK initialised
+2026-05-28 10:47:36 [info] Redis connected
+2026-05-28 10:48:11 [info] Email sent to leochima@gmail.com: Verify your ChatApp account
+2026-05-28 11:04:04 [info] Email sent to leochima@gmail.com: Verify your ChatApp account
+2026-05-28 11:07:30 [info] Firebase Admin SDK initialised
+2026-05-28 11:07:31 [info] Redis connected
+2026-05-28 11:07:42 [info] Email sent to leochima@gmail.com: Verify your ChatApp account
+2026-05-28 11:08:23 [error] Prisma error 
+Invalid `prisma.otpCode.findUnique()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/services/otp.service.ts:74:39
+
+  71   otp: string,
+  72   purpose: OtpPurpose,
+  73 ): Promise<void> {
+→ 74   const record = await prisma.otpCode.findUnique({
+         where: {
+           userId_purpose: {
+             purpose: "ACCOUNT_VERIFICATION",
+       +     userId: String
+           }
+         }
+       })
+
+Argument `userId` is missing.
+2026-05-28 11:08:23 [error] [POST] /api/auth/verify-account
+PrismaClientValidationError: 
+Invalid `prisma.otpCode.findUnique()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/services/otp.service.ts:74:39
+
+  71   otp: string,
+  72   purpose: OtpPurpose,
+  73 ): Promise<void> {
+→ 74   const record = await prisma.otpCode.findUnique({
+         where: {
+           userId_purpose: {
+             purpose: "ACCOUNT_VERIFICATION",
+       +     userId: String
+           }
+         }
+       })
+
+Argument `userId` is missing.
+    at wn (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at $n.handleRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6958)
+    at $n.handleAndLogRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async verifyOtp (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/services/otp.service.ts:74:18)
+    at async verifyAccount (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:28:3)
+2026-05-28 11:12:06 [info] Firebase Admin SDK initialised
+2026-05-28 11:12:07 [info] Redis connected
+2026-05-28 11:18:28 [error] [POST] /api/auth/login
+Error: secretOrPrivateKey must have a value
+    at Object.module.exports [as sign] (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/jsonwebtoken/sign.js:111:20)
+    at issueTokenPair (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/services/token.service.ts:34:27)
+    at login (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:57:38)
+2026-05-28 11:24:36 [error] [POST] /api/auth/login
+Error: secretOrPrivateKey must have a value
+    at Object.module.exports [as sign] (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/jsonwebtoken/sign.js:111:20)
+    at issueTokenPair (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/services/token.service.ts:34:27)
+    at login (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Auth.controller.ts:57:38)
+2026-05-28 11:27:55 [info] Firebase Admin SDK initialised
+2026-05-28 11:27:56 [info] Redis connected
+2026-05-28 11:33:10 [info] Firebase Admin SDK initialised
+2026-05-28 11:33:11 [info] Redis connected
+2026-05-28 11:56:48 [info] Firebase Admin SDK initialised
+2026-05-28 11:56:49 [info] Redis connected
+2026-05-28 13:02:52 [info] Firebase Admin SDK initialised
+2026-05-28 13:02:53 [info] Redis connected
+2026-05-28 13:03:06 [error] [GET] /api/users/online
+TypeError: res.status is not a function
+    at getOnlineUsers (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/User.controller.ts:22:9)
+2026-05-28 13:03:06 [error] [GET] /api/users/online
+TypeError: res.status is not a function
+    at getOnlineUsers (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/User.controller.ts:22:9)
+2026-05-28 13:03:36 [error] [GET] /api/users/online
+TypeError: res.status is not a function
+    at getOnlineUsers (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/User.controller.ts:22:9)
+2026-05-28 13:04:07 [error] [GET] /api/users/online
+TypeError: res.status is not a function
+    at getOnlineUsers (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/User.controller.ts:22:9)
+2026-05-28 13:04:37 [error] [GET] /api/users/online
+TypeError: res.status is not a function
+    at getOnlineUsers (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/User.controller.ts:22:9)
+2026-05-28 13:05:51 [info] Firebase Admin SDK initialised
+2026-05-28 13:05:52 [info] Redis connected
+2026-05-28 13:12:33 [info] Email sent to xtremeinnovation.ltd@gmail.com: Verify your ChatApp account
+2026-05-28 13:21:25 [info] Firebase Admin SDK initialised
+2026-05-28 13:21:27 [info] Redis connected
+2026-05-28 13:46:05 [info] Firebase Admin SDK initialised
+2026-05-28 13:46:07 [info] Redis connected
+2026-05-28 13:59:01 [info] Email sent to abdulahabobacar48@gmail.com: Verify your ChatApp account
+2026-05-28 14:03:05 [info] Firebase Admin SDK initialised
+2026-05-28 14:03:06 [info] Redis connected
+2026-05-28 14:06:36 [info] Firebase Admin SDK initialised
+2026-05-28 14:06:38 [info] Redis connected
+2026-05-28 14:13:19 [info] Firebase Admin SDK initialised
+2026-05-28 14:13:21 [info] Redis connected
+2026-05-28 14:21:13 [info] Firebase Admin SDK initialised
+2026-05-28 14:21:15 [info] Redis connected
+2026-05-28 14:25:47 [info] Firebase Admin SDK initialised
+2026-05-28 14:25:50 [info] Redis connected
+2026-05-28 14:27:56 [info] Firebase Admin SDK initialised
+2026-05-28 14:27:58 [info] Redis connected
+2026-05-28 14:37:06 [info] Firebase Admin SDK initialised
+2026-05-28 14:37:07 [info] Redis connected
+2026-05-28 15:39:50 [info] Firebase Admin SDK initialised
+2026-05-28 15:39:52 [info] Redis connected
+2026-05-28 15:40:16 [error] [POST] /api/messages
+Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project bulakutsongo-6b173 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=bulakutsongo-6b173 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:41:37 [error] [POST] /api/messages
+Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project bulakutsongo-6b173 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=bulakutsongo-6b173 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:42:42 [error] Prisma error 
+Invalid `prisma.conversation.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:50
+
+  114   return res.json({ success: true, data: existing });
+  115 }
+  116 
+→ 117 const conversation = await prisma.conversation.create(
+Unique constraint failed on the fields: (`conversation_id`,`user_id`)
+2026-05-28 15:42:42 [error] [POST] /api/conversations/direct
+PrismaClientKnownRequestError: 
+Invalid `prisma.conversation.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:50
+
+  114   return res.json({ success: true, data: existing });
+  115 }
+  116 
+→ 117 const conversation = await prisma.conversation.create(
+Unique constraint failed on the fields: (`conversation_id`,`user_id`)
+    at $n.handleRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:7315)
+    at $n.handleAndLogRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async createDirectConversation (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:24)
+2026-05-28 15:42:49 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:42:52 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:42:53 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:42:53 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:43:09 [error] Prisma error 
+Invalid `prisma.conversation.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:50
+
+  114   return res.json({ success: true, data: existing });
+  115 }
+  116 
+→ 117 const conversation = await prisma.conversation.create(
+Unique constraint failed on the fields: (`conversation_id`,`user_id`)
+2026-05-28 15:43:09 [error] [POST] /api/conversations/direct
+PrismaClientKnownRequestError: 
+Invalid `prisma.conversation.create()` invocation in
+/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:50
+
+  114   return res.json({ success: true, data: existing });
+  115 }
+  116 
+→ 117 const conversation = await prisma.conversation.create(
+Unique constraint failed on the fields: (`conversation_id`,`user_id`)
+    at $n.handleRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:7315)
+    at $n.handleAndLogRequestError (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async createDirectConversation (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:24)
+2026-05-28 15:43:18 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:43:54 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:43:56 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:44:15 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:47:02 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:47:53 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:47:56 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 15:49:27 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 16:11:15 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 16:16:24 [info] Firebase service account loaded from ./src/firestore/bulakutsongo-6b173-e81e1f9185bf.json
+2026-05-28 16:16:24 [info] Firebase Admin SDK initialised
+2026-05-28 16:16:26 [info] Redis connected
+2026-05-28 16:16:47 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 16:29:06 [info] Firebase service account loaded from ./src/firestore/bulakutsongo-6b173-e81e1f9185bf.json
+2026-05-28 16:29:06 [info] Firebase Admin SDK initialised
+2026-05-28 16:29:07 [info] Redis connected
+2026-05-28 16:31:05 [error] [POST] /api/messages
+Error: 5 NOT_FOUND: 
+    at callErrorFromStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:360:55)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:466:34)
+    at Object.onReceiveStatus (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeUnaryRequest (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/client.ts:325:42)
+    at ServiceClientImpl.<anonymous> (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at repeat (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:110:19)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/retries.ts:157:7
+    at OngoingCallPromise.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/call.ts:81:23)
+    at NormalApiCaller.call (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/normalCalls/normalApiCaller.ts:43:15)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/google-gax/src/createApiCall.ts:157:26
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:438:27)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at WriteBatch.commit (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/write-batch.js:436:43)
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/reference/document-reference.js:350:31
+    at /home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+2026-05-28 16:33:31 [info] Firebase service account loaded from ./src/firestore/bulakutsongo-6b173-e81e1f9185bf.json
+2026-05-28 16:33:31 [info] Firebase Admin SDK initialised
+2026-05-28 16:33:32 [info] Redis connected

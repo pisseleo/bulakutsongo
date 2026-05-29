@@ -95,3 +95,34 @@ export const uploadFile = async (file: File) => {
   });
   return data.data!;
 };
+
+// ─── Users — user.routes.ts ───────────────────────────────────────────────────
+// services/chat.service.ts
+export async function createDirectConversation(userId: string): Promise<Conversation> {
+  const response = await apiClient.post('/conversations/direct', { userId });
+  return response.data.data;
+}
+
+// GET /users/online
+export const getOnlineUsers = async () => {
+  const { data } = await apiClient.get<ApiResponse<any[]>>('/users/online');
+  return data.data!;
+};
+
+// GET /users/me
+export const getCurrentUser = async () => {
+  const { data } = await apiClient.get<ApiResponse<any>>('/users/me');
+  return data.data!;
+};
+
+// PATCH /users/me
+export const updateUserProfile = async (payload: { full_name?: string; profile_picture_url?: string }) => {
+  const { data } = await apiClient.patch<ApiResponse<any>>('/users/me', payload);
+  return data.data!;
+};
+
+// GET /users/:id
+export const getUserById = async (id: string) => {
+  const { data } = await apiClient.get<ApiResponse<any>>(`/users/${id}`);
+  return data.data!;
+};
