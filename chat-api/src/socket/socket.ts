@@ -9,8 +9,9 @@ import {
 } from '../services/presence.service';
 import {
   broadcastPresenceChange,
+  markNotificationAsRead,
 } from '../services/notification.service';
-import { setTypingIndicator } from '../configs/firebase';
+import { setTypingIndicator } from '../services/typing.service';
 import { AccessTokenPayload, SocketUserData, TypingPayload, ReadReceiptPayload } from '../types';
 import { logger } from '../configs/logger';
 
@@ -67,6 +68,11 @@ export function initSocket(httpServer: HttpServer): Server {
     socket.on('typing:start', (data: TypingPayload) => handleTypingStart(socket, userId, data));
     socket.on('typing:stop', (data: TypingPayload) => handleTypingStop(socket, userId, data));
     socket.on('message:read', (data: ReadReceiptPayload) => handleMessageRead(socket, userId, data));
+    
+    // Notification handlers
+    socket.on('notification:read', (notificationId: string) =>
+      handleNotificationRead(userId, notificationId),
+    );
   });
 
   logger.info('Socket.IO server initialised');
@@ -102,7 +108,8 @@ async function handleConnection(socket: AuthSocket, userId: string): Promise<voi
 
 async function handleDisconnect(socket: AuthSocket): Promise<void> {
   try {
-    const { userId, wentOffline } = await markSocketDisconnected(socket.id);
+    const result = await markSocketDisconnected(socket.id);
+    const { userId, wentOffline } = result;
 
     if (userId && wentOffline) {
       await broadcastPresenceChange(userId, 'offline');
@@ -129,8 +136,8 @@ async function handleTypingStart(
     conversationId: data.conversationId,
   });
 
-  // Also write to Firestore so mobile clients listening to Firestore get it
-  setTypingIndicator(data.conversationId, userId, true).catch(() => null);
+  // Store in Redis
+  await setTypingIndicator(data.conversationId, userId, true);
 
   // Auto-clear after 5 seconds
   setTimeout(() => {
@@ -153,7 +160,7 @@ async function handleTypingStop(
     userId,
     conversationId: data.conversationId,
   });
-  setTypingIndicator(data.conversationId, userId, false).catch(() => null);
+  await setTypingIndicator(data.conversationId, userId, false);
 }
 
 function handleMessageRead(
@@ -168,6 +175,18 @@ function handleMessageRead(
     readBy: userId,
     readAt: new Date(),
   });
+}
+
+async function handleNotificationRead(
+  userId: string,
+  notificationId: string,
+): Promise<void> {
+  try {
+    await markNotificationAsRead(notificationId, userId);
+    logger.debug(`Notification marked as read: ${notificationId}`);
+  } catch (err) {
+    logger.warn(`Error marking notification as read:`, err);
+  }
 }
 
 // ── Socket type augmentation ──────────────────────────────────────────────────

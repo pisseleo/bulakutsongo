@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
+// import path from 'path';
 import prisma from '../configs/prisma';
-import { getCache, setCache } from '../configs/redis';
-import { writeMessageToFirestore, uploadToStorage } from '../configs/firebase';
+import { getCache, setCache, delCache } from '../configs/redis';
 import { getSocketServer } from '../socket/socket';
 import { notifyNewMessage } from '../services/notification.service';
 import { AppError } from '../middleware/error.middleware';
 import { AuthenticatedRequest, PaginationMeta } from '../types';
-import { v4 as uuid } from 'uuid';
 import { MediaType } from '@/generated/prisma';
 
 // ── Send a message ────────────────────────────────────────────────────────────
@@ -26,14 +25,23 @@ export async function sendMessage(req: Request, res: Response): Promise<void> {
   });
   if (!membership) throw new AppError('You are not a member of this conversation', 403);
 
+  // Handle file upload via multer (stored locally in /uploads)
   let mediaUrl: string | null = null;
+  let resolvedMediaType: MediaType | null = mediaType ?? null;
 
-  // Handle media upload (file arrives via multer as req.file)
   if (req.file) {
-    const ext = req.file.originalname.split('.').pop();
-    const path = `messages/${conversationId}/${uuid()}.${ext}`;
-    const uploaded = await uploadToStorage(req.file.buffer, path, req.file.mimetype);
-    mediaUrl = uploaded.url;
+    // req.file.path is set by multer diskStorage (e.g. "uploads/messages/<uuid>.ext")
+    // Serve the file statically from Express — configure `app.use('/uploads', express.static('uploads'))` in app.ts
+    mediaUrl = `/uploads/${req.file.filename}`;
+
+    // Auto-detect media type from mimetype if not provided by client
+    if (!resolvedMediaType) {
+      const mime = req.file.mimetype;
+      if (mime.startsWith('image/'))       resolvedMediaType = 'IMAGE' as MediaType;
+      else if (mime.startsWith('video/'))  resolvedMediaType = 'VIDEO' as MediaType;
+      else if (mime.startsWith('audio/'))  resolvedMediaType = 'AUDIO' as MediaType;
+      else                                 resolvedMediaType = 'FILE'  as MediaType;
+    }
   }
 
   if (!content && !mediaUrl) {
@@ -47,34 +55,18 @@ export async function sendMessage(req: Request, res: Response): Promise<void> {
       sender_id: user.id,
       content: content ?? null,
       media_url: mediaUrl,
-      media_type: mediaType ?? null,
+      media_type: resolvedMediaType,
     },
     include: {
       sender: { select: { id: true, full_name: true, profile_picture_url: true } },
     },
   });
 
-  // Mirror to Firestore for real-time sync to web/mobile clients
-  const firestoreId = await writeMessageToFirestore(conversationId, {
-    id: message.id,
-    conversationId,
-    senderId: user.id,
-    senderName: message.sender.full_name,
-    content: message.content,
-    mediaUrl: message.media_url,
-    mediaType: message.media_type,
-    read: false,
-  });
-
-  // Update Firestore ID reference (non-blocking)
-  prisma.message.update({ where: { id: message.id }, data: { firestore_id: firestoreId } })
-    .catch(() => null);
-
-  // Emit via Socket.IO to conversation room
+  // Emit via Socket.IO to conversation room — all members receive the message instantly
   const io = getSocketServer();
   io.to(`conv:${conversationId}`).emit('message:new', message);
 
-  // FCM push notifications for offline members
+  // In-app notifications for members who are offline (no FCM — socket-only)
   await notifyNewMessage(
     conversationId,
     user.id,
@@ -82,9 +74,8 @@ export async function sendMessage(req: Request, res: Response): Promise<void> {
     content ?? '📎 Sent an attachment',
   );
 
-  // Bust the message list cache for this conversation
-  const cachePattern = `messages:${conversationId}:*`;
-  await setCache(cachePattern, null, 1); // simple bust
+  // Bust the message-list cache for this conversation
+  await delCache(`messages:${conversationId}:*`);
 
   res.status(201).json({ success: true, data: message });
 }
@@ -130,7 +121,7 @@ export async function getMessages(req: Request, res: Response): Promise<void> {
   };
 
   const payload = { data: messages, meta };
-  await setCache(cacheKey, payload, 30); // 30s cache
+  await setCache(cacheKey, payload, 30); // 30 s cache
 
   res.json({ success: true, ...payload });
 }

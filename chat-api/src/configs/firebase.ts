@@ -141,10 +141,28 @@ export interface FirestoreMessage {
   read: boolean;
 }
 
+// Ensure conversation document exists in Firestore before writing messages
+async function ensureConversationExists(conversationId: string): Promise<void> {
+  const conversationRef = firestoreDb
+    .collection(COLLECTIONS.MESSAGES)
+    .doc(conversationId);
+
+  const doc = await conversationRef.get();
+  if (!doc.exists) {
+    await conversationRef.set({
+      conversationId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+}
+
 export async function writeMessageToFirestore(
   conversationId: string,
   message: Omit<FirestoreMessage, 'createdAt'>,
 ): Promise<string> {
+  // Ensure parent conversation document exists
+  await ensureConversationExists(conversationId);
+
   const ref = firestoreDb
     .collection(COLLECTIONS.MESSAGES)
     .doc(conversationId)

@@ -99,33 +99,51 @@ export async function createConversation(req: Request, res: Response): Promise<v
 export async function createDirectConversation(req: Request, res: Response) {
   const { user } = req as AuthenticatedRequest;
   const { userId } = req.body;
-
-  // Check if already exists (optional)
+ 
+  // Return existing DM if one already exists
   const existing = await prisma.conversation.findFirst({
     where: {
       is_group: false,
+      AND: [
+        { members: { some: { user_id: user.id } } },
+        { members: { some: { user_id: userId } } },
+      ],
+    },
+    include: {
       members: {
-        every: { user_id: { in: [user.id, userId] } },
-        some: { user_id: user.id }
-      }
-    }
+        select: {
+          user_id: true,
+          joined_at: true,
+          user: { select: { id: true, full_name: true, profile_picture_url: true, status: true } },
+        },
+      },
+    },
   });
-  if (existing) {
-    return res.json({ success: true, data: existing });
-  }
-
+  if (existing) return res.json({ success: true, data: existing });
+ 
   const conversation = await prisma.conversation.create({
     data: {
       is_group: false,
       created_by: user.id,
       members: {
-        create: [{ user_id: user.id }, { user_id: userId }]
-      }
+        create: [{ user_id: user.id }, { user_id: userId }],
+      },
     },
-    include: { members: { include: { user: true } } }
+    // Always include members so the frontend never gets conv.members = undefined
+    include: {
+      members: {
+        select: {
+          user_id: true,
+          joined_at: true,
+          user: { select: { id: true, full_name: true, profile_picture_url: true, status: true } },
+        },
+      },
+    },
   });
+ 
   return res.status(201).json({ success: true, data: conversation });
 }
+
 // ──────────────────────────────────────────────────────────────────
 // List conversations for current user (ordered by creation date)
 // ──────────────────────────────────────────────────────────────────

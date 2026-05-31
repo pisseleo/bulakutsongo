@@ -53,6 +53,34 @@ export interface NewMessagePayload {
   message: MessageDto;
 }
 
+// ── Notification types ────────────────────────────────────────────────────────
+export interface NotificationPayload {
+  id: string;
+  userId: string;
+  type: 'NEW_MESSAGE' | 'MENTION' | 'GROUP_CREATED' | 'GROUP_INVITE' | 'MEMBER_JOINED';
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+  read: boolean;
+  createdAt: Date;
+}
+
+export interface NotificationReadPayload {
+  notificationId: string;
+}
+
+export interface ClientToServerEvents {
+  'notification:read': (notificationId: string) => void;
+}
+
+export interface ServerToClientEvents {
+  'notification:new': (notification: NotificationPayload) => void;
+  'notification:read': (data: NotificationReadPayload) => void;
+  'notification:deleted': (data: { notificationId: string }) => void;
+  'notifications:read-all': () => void;
+  'notifications:deleted-all': () => void;
+}
+
 // ── DTO types ──────────────────────────────────────────────────────────────────
 export interface MessageDto {
   id: string;

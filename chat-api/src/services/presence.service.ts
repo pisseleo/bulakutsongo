@@ -1,7 +1,6 @@
 import prisma from '../configs/prisma';
 import { setCache, getCache, delCache } from '../configs/redis';
-import { setFirestorePresence } from '../configs/firebase';
-import { logger } from '../configs/logger';
+// import { logger } from '../configs/logger';
 
 const ONLINE_TTL_SECONDS = 65;       // refreshed every 30s by heartbeat
 const SOCKETS_TTL_SECONDS = 86_400; // 24h
@@ -13,7 +12,7 @@ const socketUserKey = (socketId: string) => `presence:socket:${socketId}`;
 
 /**
  * Mark a user as online, associate the socket ID.
- * Writes to Redis (authoritative) + Firestore (for client-side listeners).
+ * Writes to Redis (authoritative) and PostgreSQL for persistence.
  */
 export async function markOnline(userId: string, socketId: string): Promise<void> {
   await setCache(onlineKey(userId), '1', ONLINE_TTL_SECONDS);
@@ -26,13 +25,8 @@ export async function markOnline(userId: string, socketId: string): Promise<void
 
   await prisma.user.update({
     where: { id: userId },
-    data: { status: 'ONLINE', last_seen: new Date() },
+    data: { status: 'online', last_seen: new Date() },
   });
-
-  // Parallel write to Firestore for web/mobile client listeners
-  setFirestorePresence(userId, 'online').catch((err) =>
-    logger.warn(`Firestore presence write failed: ${err.message}`),
-  );
 }
 
 /**
@@ -63,12 +57,8 @@ export async function markSocketDisconnected(socketId: string): Promise<{
 
   await prisma.user.update({
     where: { id: userId },
-    data: { status: 'OFFLINE', last_seen: new Date() },
+    data: { status: 'offline', last_seen: new Date() },
   });
-
-  setFirestorePresence(userId, 'offline').catch((err) =>
-    logger.warn(`Firestore presence write failed: ${err.message}`),
-  );
 
   return { userId, wentOffline: true };
 }
@@ -114,12 +104,11 @@ export async function getAllOnlineUsers(): Promise<
     email: string;
     full_name: string;
     profile_picture_url: string | null;
-    status: string | null;   // will be 'ONLINE' for these rows, but type allows null
+    status: string | null;   // will be 'online' for these rows, but type allows null
     last_seen: Date | null;  // will be a Date for online users, but type allows null
   }>
 > {
   return await prisma.user.findMany({
-    // where: { status: 'ONLINE' },
     select: {
       id: true,
       email: true,

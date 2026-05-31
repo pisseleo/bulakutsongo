@@ -1,10 +1,14 @@
-
+/**
+ * services/notification.service.ts
+ *
+ * In-app + Socket.IO notifications only — no Firebase/FCM.
+ * Notifications are persisted to PostgreSQL so users see them when they reconnect.
+ */
 import prisma from '../configs/prisma';
-import { sendMulticastPush, PushPayload } from '../configs/firebase';
-import { isOnline } from './presence.service';
 import { getSocketServer } from '../socket/socket';
 import { logger } from '../configs/logger';
 import { NotificationType, Prisma } from '@/generated/prisma';
+import { getCache, setCache, delCache } from '../configs/redis';
 
 interface CreateNotificationInput {
   userId: string;
@@ -12,61 +16,64 @@ interface CreateNotificationInput {
   title: string;
   body: string;
   data?: Record<string, unknown>;
+  conversationId?: string;
 }
 
-/**
- * Create an in-app notification, deliver it via Socket.IO (if online)
- * and via FCM push (if offline or no socket).
- */
+export interface NotificationResponse {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  read: boolean;
+  createdAt: Date;
+}
+
+// ── Create & deliver (socket) ─────────────────────────────────────────────────
+
 export async function createAndDeliverNotification(
   input: CreateNotificationInput,
-): Promise<void> {
-  // Persist to Postgres
+): Promise<NotificationResponse> {
   const notification = await prisma.notification.create({
     data: {
       user_id: input.userId,
       type: input.type,
       title: input.title,
       body: input.body,
-      data: (input.data ?? {}) as Prisma.JsonObject, 
+      data: (input.data ?? {}) as Prisma.JsonObject,
     },
   });
 
-  // Deliver via Socket.IO (instant, if connected)
-  const io = getSocketServer();
-  io.to(`user:${input.userId}`).emit('notification:new', notification);
+  const formatted: NotificationResponse = {
+    id: notification.id,
+    userId: notification.user_id,
+    type: notification.type,
+    title: notification.title,
+    body: notification.body,
+    data: notification.data as Record<string, unknown> | null,
+    read: notification.read,
+    createdAt: notification.created_at,
+  };
 
-  // FCM push for offline users (or extra reliability for mobile)
-  const online = await isOnline(input.userId);
-  if (!online) {
-    const user = await prisma.user.findUnique({
-      where: { id: input.userId },
-      select: { fcm_tokens: true },
-    });
-
-    if (user?.fcm_tokens.length) {
-      const payload: PushPayload = {
-        title: input.title,
-        body: input.body,
-        data: {
-          notificationId: notification.id,
-          type: input.type,
-          ...(input.data
-            ? Object.fromEntries(
-                Object.entries(input.data).map(([k, v]) => [k, String(v)]),
-              )
-            : {}),
-        },
-      };
-      await sendMulticastPush(user.fcm_tokens, payload);
-    }
+  // Real-time delivery via Socket.IO — works for online users instantly
+  try {
+    const io = getSocketServer();
+    io.to(`user:${input.userId}`).emit('notification:new', formatted);
+    logger.info(`Notification delivered via socket to user ${input.userId}`);
+  } catch (err) {
+    // Socket server may not be ready on first boot — notification is still in DB
+    logger.warn(`Socket delivery failed for notification ${notification.id}:`, err);
   }
+
+  // Bust unread cache
+  await delCache(`notifications:unread:${input.userId}`);
+
+  return formatted;
 }
 
-/**
- * Notify all conversation members about a new message.
- * Skips the sender.
- */
+// ── New message notification (skips sender) ───────────────────────────────────
+
 export async function notifyNewMessage(
   conversationId: string,
   senderId: string,
@@ -79,7 +86,7 @@ export async function notifyNewMessage(
   });
 
   await Promise.allSettled(
-    members.map((m: any) =>
+    members.map((m) =>
       createAndDeliverNotification({
         userId: m.user_id,
         type: 'NEW_MESSAGE',
@@ -91,48 +98,181 @@ export async function notifyNewMessage(
   );
 }
 
-/**
- * Broadcast a user's online status to all users in their conversations.
- */
+// ── Presence broadcast ────────────────────────────────────────────────────────
+
 export async function broadcastPresenceChange(
   userId: string,
   status: 'online' | 'offline',
 ): Promise<void> {
-  const io = getSocketServer();
-  io.emit(`user:${status}`, { userId, timestamp: new Date() });
-  logger.info(`Presence broadcast: user ${userId} is now ${status}`);
-}
-
-/**
- * Register or update an FCM device token for a user.
- */
-export async function registerFcmToken(userId: string, token: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { fcm_tokens: true },
-  });
-  if (!user) return;
-
-  if (!user.fcm_tokens.includes(token)) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { fcm_tokens: { push: token } },
-    });
+  try {
+    const io = getSocketServer();
+    io.emit(`user:${status}`, { userId, timestamp: new Date() });
+    logger.info(`Presence broadcast: user ${userId} is now ${status}`);
+  } catch (err) {
+    logger.warn('Presence broadcast failed:', err);
   }
 }
 
-/**
- * Remove an FCM token (e.g. on logout from that device).
- */
-export async function removeFcmToken(userId: string, token: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { fcm_tokens: true },
-  });
-  if (!user) return;
+// ── Mark notification as read ─────────────────────────────────────────────────
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { fcm_tokens: user.fcm_tokens.filter((t: any) => t !== token) },
+export async function markNotificationAsRead(
+  notificationId: string,
+  userId: string,
+): Promise<NotificationResponse | null> {
+  const notification = await prisma.notification.findFirst({
+    where: { id: notificationId, user_id: userId },
   });
+  if (!notification) return null;
+
+  const updated = await prisma.notification.update({
+    where: { id: notificationId },
+    data: { read: true },
+  });
+
+  await delCache(`notifications:unread:${userId}`);
+
+  try {
+    const io = getSocketServer();
+    io.to(`user:${userId}`).emit('notification:read', { notificationId });
+  } catch (err) {
+    logger.warn('Socket update failed for notification read:', err);
+  }
+
+  return {
+    id: updated.id,
+    userId: updated.user_id,
+    type: updated.type,
+    title: updated.title,
+    body: updated.body,
+    data: updated.data as Record<string, unknown> | null,
+    read: updated.read,
+    createdAt: updated.created_at,
+  };
+}
+
+// ── Mark all as read ──────────────────────────────────────────────────────────
+
+export async function markAllNotificationsAsRead(userId: string): Promise<number> {
+  const result = await prisma.notification.updateMany({
+    where: { user_id: userId, read: false },
+    data: { read: true },
+  });
+
+  await delCache(`notifications:unread:${userId}`);
+
+  try {
+    const io = getSocketServer();
+    io.to(`user:${userId}`).emit('notifications:read-all');
+  } catch (err) {
+    logger.warn('Socket update failed for notifications read-all:', err);
+  }
+
+  return result.count;
+}
+
+// ── Delete notification ───────────────────────────────────────────────────────
+
+export async function deleteNotification(
+  notificationId: string,
+  userId: string,
+): Promise<boolean> {
+  const notification = await prisma.notification.findFirst({
+    where: { id: notificationId, user_id: userId },
+  });
+  if (!notification) return false;
+
+  await prisma.notification.delete({ where: { id: notificationId } });
+  await delCache(`notifications:unread:${userId}`);
+
+  try {
+    const io = getSocketServer();
+    io.to(`user:${userId}`).emit('notification:deleted', { notificationId });
+  } catch (err) {
+    logger.warn('Socket update failed for notification delete:', err);
+  }
+
+  return true;
+}
+
+// ── Delete all notifications ──────────────────────────────────────────────────
+
+export async function deleteAllNotifications(userId: string): Promise<number> {
+  const result = await prisma.notification.deleteMany({ where: { user_id: userId } });
+  await delCache(`notifications:unread:${userId}`);
+
+  try {
+    const io = getSocketServer();
+    io.to(`user:${userId}`).emit('notifications:deleted-all');
+  } catch (err) {
+    logger.warn('Socket update failed for notifications delete-all:', err);
+  }
+
+  return result.count;
+}
+
+// ── Read helpers ──────────────────────────────────────────────────────────────
+
+export async function getUnreadNotifications(
+  userId: string,
+  limit = 50,
+  offset = 0,
+): Promise<{ notifications: NotificationResponse[]; total: number }> {
+  const cached = await getCache<{ notifications: NotificationResponse[]; total: number }>(
+    `notifications:unread:${userId}`,
+  );
+  if (cached) return cached;
+
+  const [notifications, total] = await Promise.all([
+    prisma.notification.findMany({
+      where: { user_id: userId, read: false },
+      orderBy: { created_at: 'desc' },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.notification.count({ where: { user_id: userId, read: false } }),
+  ]);
+
+  const formatted: NotificationResponse[] = notifications.map((n) => ({
+    id: n.id,
+    userId: n.user_id,
+    type: n.type,
+    title: n.title,
+    body: n.body,
+    data: n.data as Record<string, unknown> | null,
+    read: n.read,
+    createdAt: n.created_at,
+  }));
+
+  const result = { notifications: formatted, total };
+  await setCache(`notifications:unread:${userId}`, result, 300); // 5 min
+  return result;
+}
+
+export async function getAllNotifications(
+  userId: string,
+  limit = 50,
+  offset = 0,
+): Promise<{ notifications: NotificationResponse[]; total: number }> {
+  const [notifications, total] = await Promise.all([
+    prisma.notification.findMany({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.notification.count({ where: { user_id: userId } }),
+  ]);
+
+  const formatted: NotificationResponse[] = notifications.map((n) => ({
+    id: n.id,
+    userId: n.user_id,
+    type: n.type,
+    title: n.title,
+    body: n.body,
+    data: n.data as Record<string, unknown> | null,
+    read: n.read,
+    createdAt: n.created_at,
+  }));
+
+  return { notifications: formatted, total };
 }
