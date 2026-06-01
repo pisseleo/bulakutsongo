@@ -989,3 +989,15 @@ Unique constraint failed on the fields: (`conversation_id`,`user_id`)
     at $n.request (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:121:6307)
     at async l (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/node_modules/@prisma/client/runtime/library.js:130:9633)
     at async createDirectConversation (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Conversation.controller.ts:117:24)
+2026-06-01 09:56:22 [error] [POST] /api/messages
+Error: Socket.IO server not initialised
+    at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
+    at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)
+2026-06-01 09:57:37 [error] [POST] /api/messages
+Error: Socket.IO server not initialised
+    at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
+    at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)
+2026-06-01 10:06:05 [error] [POST] /api/messages
+Error: Socket.IO server not initialised
+    at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
+    at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)

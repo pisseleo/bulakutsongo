@@ -1,7 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
+import { createAdapter } from '@socket.io/redis-adapter';
 import prisma from '../configs/prisma';
+import { redisClient } from '../configs/redis';
 import {
   markOnline,
   markSocketDisconnected,
@@ -32,6 +34,15 @@ export function initSocket(httpServer: HttpServer): Server {
     pingInterval: 25_000,
     pingTimeout: 20_000,
   });
+
+  // ── Redis Adapter (for horizontal scaling) ─────────────────────────────────
+  try {
+    io.adapter(createAdapter(redisClient, redisClient.duplicate()));
+    logger.info('Redis adapter initialized for Socket.IO');
+  } catch (err) {
+    logger.warn('Failed to initialize Redis adapter:', err);
+    // Socket.IO will still work without Redis adapter, just without multi-server support
+  }
 
   // ── JWT Authentication Middleware ──────────────────────────────────────────
   io.use(async (socket, next) => {
@@ -68,6 +79,8 @@ export function initSocket(httpServer: HttpServer): Server {
     socket.on('typing:start', (data: TypingPayload) => handleTypingStart(socket, userId, data));
     socket.on('typing:stop', (data: TypingPayload) => handleTypingStop(socket, userId, data));
     socket.on('message:read', (data: ReadReceiptPayload) => handleMessageRead(socket, userId, data));
+    socket.on('join_room', (conversationId: string) => handleJoinRoom(socket, conversationId));
+    socket.on('leave_room', (conversationId: string) => handleLeaveRoom(socket, conversationId));
     
     // Notification handlers
     socket.on('notification:read', (notificationId: string) =>
@@ -187,6 +200,18 @@ async function handleNotificationRead(
   } catch (err) {
     logger.warn(`Error marking notification as read:`, err);
   }
+}
+
+function handleJoinRoom(socket: AuthSocket, conversationId: string): void {
+  if (!conversationId) return;
+  socket.join(`conv:${conversationId}`);
+  logger.debug(`Socket ${socket.id} joined conv:${conversationId}`);
+}
+
+function handleLeaveRoom(socket: AuthSocket, conversationId: string): void {
+  if (!conversationId) return;
+  socket.leave(`conv:${conversationId}`);
+  logger.debug(`Socket ${socket.id} left conv:${conversationId}`);
 }
 
 // ── Socket type augmentation ──────────────────────────────────────────────────

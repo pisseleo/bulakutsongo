@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { LogOutIcon, PlusCircle, User, Wifi, WifiOff } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { LogOutIcon, PlusCircle, User, UsersIcon, Wifi, WifiOff } from 'lucide-react';
 import styles from './chat.module.css';
 import { useAuth } from '@/context/Auth.context';
 import { useSocket } from '@/context/Socket.context';
@@ -15,6 +15,7 @@ import {
 } from '@/services/chat.service';
 import { getOnlineUsers } from '@/services/users.service';
 import Navigation from '@/components/Navigation';
+import OnlineUsers, { type OnlineUser } from '@/components/OnlineUsers';
 import type { Conversation, ConversationMember, Message } from '@/types';
 
 // ─── Local display types ──────────────────────────────────────────────────────
@@ -36,7 +37,9 @@ type MessageBubble = {
   id: string;
   text: string;
   senderId: string;
+  senderName: string;
   time: string;
+  date: string;
   file?: string;
   isAudio?: boolean;
 };
@@ -45,6 +48,7 @@ type MessageBubble = {
 
 export default function Chat() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user: authUser, isAuthenticated, isLoading } = useAuth();
   const { socket, isConnected } = useSocket();
 
@@ -57,15 +61,34 @@ export default function Chat() {
   const [activeTab, setActiveTab] = useState<'groups' | 'users'>('groups');
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
 
-  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // ── Refs ──────────────────────────────────────────────────────────────────
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedChatRef = useRef<ChatType | null>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  // Ref so socket callbacks always read the latest selected chat without stale closure
-  const selectedChatRef = useRef<ChatType | null>(null);
+
+  // ── Detect mobile view ────────────────────────────────────────────────────
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize(); // Check on mount
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
+
+  // ── Re-join socket room on reconnect ──────────────────────────────────────
+  useEffect(() => {
+    if (!socket || !isConnected || !selectedChat) return;
+    console.log('[Chat] 🔁 (Re)joining room after connect:', selectedChat.id);
+    socket.emit('join_room', selectedChat.id);
+  }, [socket, isConnected, selectedChat?.id]);
 
   // ── Auth guard ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -80,6 +103,43 @@ export default function Chat() {
       catch (e) { console.error('Failed to fetch conversations', e); }
     })();
   }, [isAuthenticated]);
+
+  // ── Deep-link: auto-open chat from query params (?userId=&userName=&conversationId=)
+  useEffect(() => {
+    if (!isAuthenticated || !authUser) return;
+    const userId = searchParams.get('userId');
+    const userName = searchParams.get('userName');
+    const conversationId = searchParams.get('conversationId');
+    if (!userId || !userName) return;
+
+    const openDeepLinkedChat = async () => {
+      try {
+        let conv: Conversation;
+        if (conversationId) {
+          // Prefer the conversationId passed directly
+          conv = { id: conversationId, isGroup: false, members: [{ userId }] } as any;
+        } else {
+          conv = await createDirectConversation(userId);
+        }
+        selectChat({
+          id: conv.id,
+          name: decodeURIComponent(userName),
+          avatar: decodeURIComponent(userName)[0] ?? '👤',
+          type: 'direct',
+          memberIds: [userId, authUser.id],
+          userId,
+          online: false,
+        });
+        // Clean up query params without a full navigation
+        router.replace('/views/chat/chat');
+      } catch (e) {
+        console.error('Failed to open deep-linked chat', e);
+      }
+    };
+
+    openDeepLinkedChat();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authUser?.id]);
 
   // ── Fetch online users (refresh every 60 s) ───────────────────────────────
   useEffect(() => {
@@ -116,13 +176,27 @@ export default function Chat() {
     if (!socket) return;
 
     const onMessageNew = (msg: any) => {
+      console.log('[Chat] 📨 Message new event:', { 
+        msgId: msg.id, 
+        conversationId: msg.conversation_id || msg.conversationId,
+        currentChatId: selectedChatRef.current?.id,
+        senderId: msg.sender_id || msg.senderId
+      });
+      
       // Only append if the message belongs to the currently open conversation
       if (msg.conversationId !== selectedChatRef.current?.id &&
-          msg.conversation_id !== selectedChatRef.current?.id) return;
+          msg.conversation_id !== selectedChatRef.current?.id) {
+        console.log('[Chat] ⚠️ Message ignored: different conversation');
+        return;
+      }
 
       setBubbles((prev) => {
         // Replace optimistic bubble (same id) or append
-        if (prev.some((b) => b.id === msg.id)) return prev;
+        if (prev.some((b) => b.id === msg.id)) {
+          console.log('[Chat] ℹ️ Message already exists (optimistic), skipping');
+          return prev;
+        }
+        console.log('[Chat] ➕ Adding message to bubbles');
         return [...prev, socketMsgToBubble(msg)];
       });
 
@@ -176,7 +250,7 @@ export default function Chat() {
       socket.off('user:online',     onUserOnline);
       socket.off('user:offline',    onUserOffline);
     };
-  }, [socket, authUser?.id]);
+  }, [socket, isConnected, authUser?.id]);
 
   // ── Emit typing indicator ─────────────────────────────────────────────────
   const handleTyping = useCallback(() => {
@@ -207,6 +281,12 @@ export default function Chat() {
 
     if (!content.trim() && !uploadFile) return;
 
+    console.log('[Chat] 📤 Sending message:', { 
+      conversationId: selectedChat.id, 
+      hasContent: !!content.trim(),
+      hasFile: !!uploadFile
+    });
+
     // Stop typing
     if (socket) {
       socket.emit('typing:stop', { conversationId: selectedChat.id });
@@ -215,13 +295,16 @@ export default function Chat() {
 
     // Optimistic bubble
     const tempId = `temp-${Date.now()}`;
+    const now_date = new Date();
     setBubbles((prev) => [
       ...prev,
       {
         id: tempId,
         text: content,
         senderId: authUser.id,
-        time: now(),
+        senderName: authUser.full_name ?? authUser.email ?? 'You',
+        date: now_date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+        time: now_date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         file: uploadFile ? URL.createObjectURL(uploadFile) : undefined,
         isAudio,
       },
@@ -285,14 +368,26 @@ export default function Chat() {
 
   // ── Select chat + join socket room ────────────────────────────────────────
   const selectChat = (chat: ChatType) => {
-    if (socket && selectedChat?.id) socket.emit('leave_room', selectedChat.id);
+    console.log('[Chat] 🔄 Switching chat:', { chatId: chat.id, chatName: chat.name });
+    
+    if (socket && selectedChat?.id) {
+      console.log('[Chat] 📤 Leaving room:', selectedChat.id);
+      socket.emit('leave_room', selectedChat.id);
+    }
+    
     setSelectedChat(chat);
     setTypingUsers({});
-    if (socket) socket.emit('join_room', chat.id);
+    
+    if (socket) {
+      console.log('[Chat] 📥 Joining room:', chat.id);
+      socket.emit('join_room', chat.id);
+    } else {
+      console.warn('[Chat] ⚠️ Socket not available when selecting chat');
+    }
   };
 
   // ── Open or create a DM with an online user ───────────────────────────────
-  const startUserChat = async (u: any) => {
+  const startUserChat = async (u: OnlineUser) => {
     try {
       // Check existing direct conversation in state first
       const existing = conversations.find(
@@ -310,10 +405,11 @@ export default function Chat() {
     }
   };
 
-  // ── Derived lists ─────────────────────────────────────────────────────────
+  // ── Derive lists ─────────────────────────────────────────────────────────
   const groupConversations = conversations.filter((c) => c.isGroup);
-  const onlineList  = onlineUsers.filter((u) => u.status === 'online');
-  const offlineList = onlineUsers.filter((u) => u.status !== 'online');
+  // Only show online users who are not the logged-in user
+  const onlineList  = onlineUsers.filter((u) => u.status === 'online' && u.id !== authUser?.id);
+  const offlineList = onlineUsers.filter((u) => u.status !== 'online' && u.id !== authUser?.id);
   const typingLabel = Object.keys(typingUsers).length > 0 ? 'typing…' : null;
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -353,7 +449,7 @@ export default function Chat() {
 
           <div className={styles.tabs}>
             <button className={`${styles.tab} ${activeTab === 'groups' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('groups')}>👥 Groups</button>
+              onClick={() => setActiveTab('groups')}><UsersIcon /> Groups</button>
             <button className={`${styles.tab} ${activeTab === 'users' ? styles.activeTab : ''}`}
               onClick={() => setActiveTab('users')}>👤 Users</button>
           </div>
@@ -363,8 +459,14 @@ export default function Chat() {
           </div>
 
           <div className={styles.conversationsList}>
-            {activeTab === 'groups' ? (
-              groupConversations.map((conv) => (
+            {/* Mobile: show combined list; Desktop: show tab-based list */}
+            {isMobile ? (
+              // MOBILE: Combined list with groups and users
+              <>
+                {groupConversations.length > 0 && (
+                  <div className={styles.sectionHeader}>👥 Groups ({groupConversations.length})</div>
+                )}
+                {groupConversations.map((conv) => (
                 <div
                   key={conv.id}
                   className={`${styles.conversationItem} ${selectedChat?.id === conv.id ? styles.activeConversation : ''}`}
@@ -383,14 +485,12 @@ export default function Chat() {
                     {/* lastMessage — not messages[] — per the Conversation type */}
                     {conv.lastMessage && (
                       <div className={styles.conversationLastMsg}>
-                        {conv.lastMessage.content || '📎 Attachment'}
+                        {conv.lastMessage.content || '📎 anexos'}
                       </div>
                     )}
                   </div>
                 </div>
-              ))
-            ) : (
-              <>
+              ))}
                 {onlineList.length > 0 && (
                   <div className={styles.sectionHeader}>🟢 Online ({onlineList.length})</div>
                 )}
@@ -419,6 +519,65 @@ export default function Chat() {
                   </div>
                 ))}
               </>
+            ) : (
+              // DESKTOP: Tab-based list
+              <>
+                {activeTab === 'groups' ? (
+                  groupConversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className={`${styles.conversationItem} ${selectedChat?.id === conv.id ? styles.activeConversation : ''}`}
+                      onClick={() => selectChat({
+                        id: conv.id,
+                        name: conv.name ?? 'Group',
+                        avatar: conv.name?.[0] ?? '👥',
+                        type: 'group',
+                        memberIds: (conv.members ?? []).map((m: ConversationMember) => m.userId),
+                      })}
+                    >
+                      <div className={styles.conversationAvatar}>{conv.name?.[0] ?? '👥'}</div>
+                      <div className={styles.conversationInfo}>
+                        <div className={styles.conversationName}>{conv.name ?? 'Group'}</div>
+                        {conv.lastMessage && (
+                          <div className={styles.conversationLastMsg}>
+                            {conv.lastMessage.content || '📎 anexos'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    {onlineList.length > 0 && (
+                      <div className={styles.sectionHeader}>🟢 Online ({onlineList.length})</div>
+                    )}
+                    {onlineList.map((u) => (
+                      <div key={u.id} className={styles.conversationItem} onClick={() => startUserChat(u)}>
+                        <div className={styles.conversationAvatar}>{u.full_name?.[0] ?? '👤'}</div>
+                        <div className={styles.conversationInfo}>
+                          <div className={styles.conversationName}>
+                            {u.full_name} <span className={styles.onlineBadge}>🟢</span>
+                          </div>
+                          <div className={styles.conversationLastMsg}>{u.email}</div>
+                        </div>
+                      </div>
+                    ))}
+                    {offlineList.length > 0 && (
+                      <div className={styles.sectionHeader}>⚫ Offline ({offlineList.length})</div>
+                    )}
+                    {offlineList.map((u) => (
+                      <div key={u.id} className={styles.conversationItem} style={{ opacity: 0.6 }}
+                        onClick={() => startUserChat(u)}>
+                        <div className={styles.conversationAvatar}>{u.full_name?.[0] ?? '👤'}</div>
+                        <div className={styles.conversationInfo}>
+                          <div className={styles.conversationName}>{u.full_name}</div>
+                          <div className={styles.conversationLastMsg}>{u.email}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -442,20 +601,32 @@ export default function Chat() {
               </div>
 
               <div className={styles.messagesArea}>
-                {bubbles.map((b) => (
+                {bubbles.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                    No messages yet. Start the conversation!
+                  </div>
+                )}
+                {bubbles.map((b) => {
+                  const isSentByMe = b.senderId === authUser?.id;
+                  return (
                   <div
                     key={b.id}
                     className={`${styles.message} ${
-                      b.senderId === authUser?.id ? styles.messageSent : styles.messageReceived
+                      isSentByMe ? styles.messageSent : styles.messageReceived
                     } ${b.id.startsWith('temp-') ? 'opacity-60' : ''}`}
                   >
+                    {/* Show sender name only for received messages */}
+                    {!isSentByMe && (
+                      <div className={styles.senderName}>{b.senderName}</div>
+                    )}
+                    
                     {b.file && b.isAudio ? (
                       <audio controls src={b.file} className={styles.audioPlayer} />
                     ) : b.file ? (
                       <div>
                         {b.text && <div className={styles.messageText}>{b.text}</div>}
                         {/\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(b.file) ? (
-                          <Image src={b.file} alt="attachment" width={200} height={200}
+                          <Image src={b.file} alt="anexos" width={200} height={200}
                             className={styles.previewImage} />
                         ) : (
                           <a href={b.file} download className={styles.fileLink}>
@@ -466,9 +637,13 @@ export default function Chat() {
                     ) : (
                       <div className={styles.messageText}>{b.text}</div>
                     )}
-                    <div className={styles.messageTime}>{b.time}</div>
+                    <div className={styles.messageFooter}>
+                      <span className={styles.messageDate}>{b.date}</span>
+                      <span className={styles.messageTime}>{b.time}</span>
+                    </div>
                   </div>
-                ))}
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -503,6 +678,14 @@ export default function Chat() {
             </div>
           )}
         </div>
+
+        {/* ── Online users panel (hidden on mobile) ─────────────────────────── */}
+        <div className="hidden lg:block w-56 flex-shrink-0">
+          <OnlineUsers
+            selectedUserId={selectedChat?.userId}
+            onSelectUser={(user) => startUserChat(user)}
+          />
+        </div>
       </div>
     </div>
   );
@@ -510,21 +693,34 @@ export default function Chat() {
 
 // ─── Pure helpers (no hooks) ──────────────────────────────────────────────────
 
-function now() {
-  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
 /** Map a typed Message (from REST API) to a display bubble. */
-function msgToBubble(msg: Message): MessageBubble {
+function msgToBubble(msg: any): MessageBubble {
+  // API returns snake_case, so handle both formats
+  const createdAtStr = msg.createdAt || msg.created_at;
+  const senderId = msg.senderId || msg.sender_id;
+  const senderName = msg.sender?.full_name || msg.sender_name || msg.sender?.email || 'Unknown';
+  
+  // Parse date safely - handle ISO string
+  let date: Date;
+  try {
+    date = new Date(createdAtStr);
+    if (isNaN(date.getTime())) {
+      date = new Date();
+    }
+  } catch {
+    date = new Date();
+  }
+  
   return {
     id: msg.id,
     text: msg.content ?? '',
-    // Message type has senderId (camelCase) per your type definition
-    senderId: msg.senderId,
-    time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    senderId,
+    senderName,
+    date: date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+    time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     file: msg.media_url ?? undefined,
     // Message.media_type uses lowercase: 'voice' | 'image' | 'video' | 'document'
-    isAudio: msg.media_type === 'voice',
+    isAudio: msg.media_type === 'voice' || msg.media_type === 'VOICE',
   };
 }
 
@@ -533,13 +729,29 @@ function msgToBubble(msg: Message): MessageBubble {
  * The server emits the Prisma row directly so fields are snake_case.
  */
 function socketMsgToBubble(msg: any): MessageBubble {
+  // Handle both snake_case and camelCase formats
+  const createdAtStr = msg.created_at || msg.createdAt;
+  const senderId = msg.sender_id || msg.senderId;
+  const senderName = msg.sender?.full_name || msg.sender_name || msg.sender?.email || 'Unknown';
+  
+  // Parse date safely - handle ISO string
+  let date: Date;
+  try {
+    date = new Date(createdAtStr ?? Date.now());
+    if (isNaN(date.getTime())) {
+      date = new Date();
+    }
+  } catch {
+    date = new Date();
+  }
+  
   return {
     id: msg.id,
     text: msg.content ?? '',
-    // socket payload uses sender_id (snake_case, from Prisma row)
-    senderId: msg.sender_id ?? msg.senderId,
-    time: new Date(msg.created_at ?? msg.createdAt ?? Date.now())
-      .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    senderId,
+    senderName,
+    date: date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+    time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     file: msg.media_url ?? undefined,
     isAudio: msg.media_type === 'AUDIO' || msg.media_type === 'voice',
   };

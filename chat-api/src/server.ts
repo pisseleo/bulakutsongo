@@ -1,6 +1,6 @@
 import http from 'http';
 import app from './app';
-import { initializeSocket } from './configs/socket';
+import { initSocket } from './socket/socket';
 
 // Safety net for any unhandled promise rejection (should not happen after fix)
 process.on('unhandledRejection', (reason, promise) => {
@@ -12,8 +12,8 @@ process.on('unhandledRejection', (reason, promise) => {
 const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
 
-// Initialize WebSocket
-const io = initializeSocket(server);
+// Initialize WebSocket via socket.ts
+const io = initSocket(server);
 
 // BigInt serialization fix
 (BigInt.prototype as any).toJSON = function () {

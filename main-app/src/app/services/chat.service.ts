@@ -103,6 +103,16 @@ export async function createDirectConversation(userId: string): Promise<Conversa
   return response.data.data;
 }
 
+// POST /conversations (for group creation)
+export async function createGroupConversation(name: string, memberIds: string[]): Promise<Conversation> {
+  const response = await apiClient.post<ApiResponse<Conversation>>('/conversations', {
+    type: 'group',
+    name,
+    memberIds,
+  });
+  return response.data.data!;
+}
+
 // GET /users/online
 export const getOnlineUsers = async () => {
   const { data } = await apiClient.get<ApiResponse<any[]>>('/users/online');

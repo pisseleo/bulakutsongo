@@ -104,11 +104,12 @@ export async function getAllOnlineUsers(): Promise<
     email: string;
     full_name: string;
     profile_picture_url: string | null;
-    status: string | null;   // will be 'online' for these rows, but type allows null
-    last_seen: Date | null;  // will be a Date for online users, but type allows null
+    status: string | null;
+    last_seen: Date | null;
   }>
 > {
   return await prisma.user.findMany({
+    where: { status: 'online' },
     select: {
       id: true,
       email: true,

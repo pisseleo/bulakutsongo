@@ -1,30 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './create-group.module.css';
+import { useAuth } from '@/context/Auth.context';
+import { getOnlineUsers } from '@/services/users.service';
+import { createGroupConversation } from '@/services/chat.service';
+import type { ApiResponse } from '@/types';
 
 type User = {
-  id: number;
-  name: string;
+  id: string;
+  full_name: string;
   email: string;
-  avatar: string;
+  status?: string;
 };
 
 export default function CreateGroup() {
+  const router = useRouter();
+  const { user: authUser, isAuthenticated, isLoading } = useAuth();
   const [groupName, setGroupName] = useState('');
-  const [groupType, setGroupType] = useState('public');
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
-  const users: User[] = [
-    { id: 1, name: 'Maria Silva', email: 'maria@email.com', avatar: '👩' },
-    { id: 2, name: 'João Carlos', email: 'joao@email.com', avatar: '👨' },
-    { id: 3, name: 'Ana Santos', email: 'ana@email.com', avatar: '👧' },
-    { id: 4, name: 'Pedro Costa', email: 'pedro@email.com', avatar: '👦' },
-    { id: 5, name: 'Carla Mendes', email: 'carla@email.com', avatar: '👩‍🦱' },
-    { id: 6, name: 'Ricardo Lopes', email: 'ricardo@email.com', avatar: '🧔' },
-  ];
+  // ── Auth guard ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) router.push('/views/auth/login');
+  }, [isLoading, isAuthenticated, router]);
 
-  const handleToggleUser = (userId: number) => {
+  // ── Fetch online users ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    (async () => {
+      try {
+        const onlineUsers = await getOnlineUsers();
+        // Filter: only show users with 'online' status, exclude the logged-in user
+        const filteredUsers = onlineUsers.filter(
+          (u) => u.status === 'online' && u.id !== authUser?.id
+        );
+        setUsers(filteredUsers);
+      } catch (e) {
+        console.error('Failed to fetch online users', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isAuthenticated, authUser?.id]);
+
+  const handleToggleUser = (userId: string) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId)
@@ -44,7 +68,7 @@ export default function CreateGroup() {
     setSelectedUsers([]);
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!groupName.trim()) {
       alert('Digite o nome do grupo');
       return;
@@ -55,14 +79,22 @@ export default function CreateGroup() {
       return;
     }
 
-    const selectedUsersData = users.filter(u => selectedUsers.includes(u.id));
-    
-    alert(`Grupo "${groupName}" criado com sucesso!\nTipo: ${groupType === 'public' ? 'Público' : 'Privado'}\nMembros: ${selectedUsersData.map(u => u.name).join(', ')}`);
-    
-    setTimeout(() => {
-      window.location.href = '/chat';
-    }, 2000);
+    setCreating(true);
+    try {
+      await createGroupConversation(groupName, selectedUsers);
+      alert('Grupo criado com sucesso!');
+      router.push('/views/chat/chat');
+    } catch (e) {
+      console.error('Failed to create group', e);
+      alert('Erro ao criar o grupo. Tente novamente.');
+    } finally {
+      setCreating(false);
+    }
   };
+
+  if (isLoading) {
+    return <div className={styles.container}><div className={styles.box}>Carregando...</div></div>;
+  }
 
   return (
     <div className={styles.container}>
@@ -78,59 +110,77 @@ export default function CreateGroup() {
             placeholder="Ex: Amigos, Trabalho, Família..."
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
+            disabled={creating}
           />
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label>Tipo de grupo</label>
-          <select value={groupType} onChange={(e) => setGroupType(e.target.value)}>
-            <option value="public">Público - Qualquer um pode entrar</option>
-            <option value="private">Privado - Apenas convidados</option>
-          </select>
         </div>
 
         <div className={styles.inputGroup}>
           <div className={styles.selectionHeader}>
             <label>Selecionar membros ({selectedUsers.length} de {users.length})</label>
             <div className={styles.selectionButtons}>
-              <button type="button" className={styles.selectAllBtn} onClick={handleSelectAll}>
+              <button 
+                type="button" 
+                className={styles.selectAllBtn} 
+                onClick={handleSelectAll}
+                disabled={creating}
+              >
                 {selectedUsers.length === users.length ? 'Desselecionar Todos' : 'Selecionar Todos'}
               </button>
               {selectedUsers.length > 0 && (
-                <button type="button" className={styles.clearBtn} onClick={handleClearAll}>
+                <button 
+                  type="button" 
+                  className={styles.clearBtn} 
+                  onClick={handleClearAll}
+                  disabled={creating}
+                >
                   Limpar
                 </button>
               )}
             </div>
           </div>
           <div className={styles.membersSection}>
-            {users.map(user => (
-              <div 
-                key={user.id} 
-                className={styles.memberItem}
-                onClick={() => handleToggleUser(user.id)}
-              >
-                <div className={styles.memberAvatar}>{user.avatar}</div>
-                <div className={styles.memberInfo}>
-                  <div className={styles.memberName}>{user.name}</div>
-                  <div className={styles.memberEmail}>{user.email}</div>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={selectedUsers.includes(user.id)}
-                  onChange={() => {}}
-                  className={styles.checkbox}
-                />
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                Carregando usuários online...
               </div>
-            ))}
+            ) : users.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                Nenhum usuário online disponível
+              </div>
+            ) : (
+              users.map(user => (
+                <div 
+                  key={user.id} 
+                  className={styles.memberItem}
+                  onClick={() => !creating && handleToggleUser(user.id)}
+                >
+                  <div className={styles.memberAvatar}>{user.full_name?.[0] ?? '👤'}</div>
+                  <div className={styles.memberInfo}>
+                    <div className={styles.memberName}>{user.full_name}</div>
+                    <div className={styles.memberEmail}>{user.email}</div>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedUsers.includes(user.id)}
+                    onChange={() => {}}
+                    className={styles.checkbox}
+                    disabled={creating}
+                  />
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        <button className={styles.button} onClick={handleCreateGroup}>
-          Criar Grupo
+        <button 
+          className={styles.button} 
+          onClick={handleCreateGroup}
+          disabled={creating}
+        >
+          {creating ? 'Criando...' : 'Criar Grupo'}
         </button>
 
-        <a href="/chat" className={styles.backLink}>
+        <a href="/views/chat/chat" className={styles.backLink}>
           ← Voltar ao chat
         </a>
       </div>

@@ -1067,3 +1067,105 @@ Unique constraint failed on the fields: (`conversation_id`,`user_id`)
 2026-05-31 20:55:19 [info] Firebase service account loaded from environment variables
 2026-05-31 20:55:19 [info] Firebase Admin SDK initialised
 2026-05-31 20:55:20 [info] Redis connected
+2026-06-01 09:34:52 [info] Firebase service account loaded from environment variables
+2026-06-01 09:34:52 [info] Firebase Admin SDK initialised
+2026-06-01 09:34:55 [info] Redis connected
+2026-06-01 09:56:22 [error] [POST] /api/messages
+Error: Socket.IO server not initialised
+    at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
+    at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)
+2026-06-01 09:57:37 [error] [POST] /api/messages
+Error: Socket.IO server not initialised
+    at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
+    at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)
+2026-06-01 10:06:05 [error] [POST] /api/messages
+Error: Socket.IO server not initialised
+    at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
+    at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)
+2026-06-01 10:06:31 [info] Firebase service account loaded from environment variables
+2026-06-01 10:06:31 [info] Firebase Admin SDK initialised
+2026-06-01 10:06:34 [info] Redis adapter initialized for Socket.IO
+2026-06-01 10:06:34 [info] Socket.IO server initialised
+2026-06-01 10:06:34 [info] Redis connected
+2026-06-01 10:19:13 [info] Firebase service account loaded from environment variables
+2026-06-01 10:19:13 [info] Firebase Admin SDK initialised
+2026-06-01 10:19:16 [info] Redis adapter initialized for Socket.IO
+2026-06-01 10:19:16 [info] Socket.IO server initialised
+2026-06-01 10:19:16 [info] Redis connected
+2026-06-01 10:20:53 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 10:21:33 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 10:27:12 [info] Firebase service account loaded from environment variables
+2026-06-01 10:27:12 [info] Firebase Admin SDK initialised
+2026-06-01 10:27:14 [info] Redis adapter initialized for Socket.IO
+2026-06-01 10:27:14 [info] Socket.IO server initialised
+2026-06-01 10:27:14 [info] Redis connected
+2026-06-01 10:32:40 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 10:51:14 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 10:55:06 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 10:55:40 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 10:56:11 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 11:09:30 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 11:10:09 [info] Firebase service account loaded from environment variables
+2026-06-01 11:10:09 [info] Firebase Admin SDK initialised
+2026-06-01 11:10:12 [info] Redis adapter initialized for Socket.IO
+2026-06-01 11:10:12 [info] Socket.IO server initialised
+2026-06-01 11:10:12 [info] Redis connected
+2026-06-01 11:48:49 [info] Firebase service account loaded from environment variables
+2026-06-01 11:48:49 [info] Firebase Admin SDK initialised
+2026-06-01 11:48:53 [info] Redis adapter initialized for Socket.IO
+2026-06-01 11:48:53 [info] Socket.IO server initialised
+2026-06-01 11:48:53 [info] Redis connected
+2026-06-01 12:21:00 [info] Firebase service account loaded from environment variables
+2026-06-01 12:21:00 [info] Firebase Admin SDK initialised
+2026-06-01 12:21:01 [info] Redis adapter initialized for Socket.IO
+2026-06-01 12:21:01 [info] Socket.IO server initialised
+2026-06-01 12:21:01 [info] Redis connected
+2026-06-01 12:27:01 [info] Firebase service account loaded from environment variables
+2026-06-01 12:27:01 [info] Firebase Admin SDK initialised
+2026-06-01 12:27:02 [info] Redis adapter initialized for Socket.IO
+2026-06-01 12:27:02 [info] Socket.IO server initialised
+2026-06-01 12:27:03 [info] Redis connected
+2026-06-01 12:30:55 [info] Email sent to eraseredge@gmail.com: Verify your ChatApp account
+2026-06-01 12:32:15 [info] Email sent to ashleymalate911@gmail.com: Verify your ChatApp account
+2026-06-01 12:32:19 [info] Email sent to adilshaguala0@gmail.com: Verify your ChatApp account
+2026-06-01 12:32:28 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:32:28 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:33:02 [info] Email sent to ashleymalate04@gmail.com: Verify your ChatApp account
+2026-06-01 12:33:06 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:33:06 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:33:33 [info] Email sent to kevinchambule31@gmail.com: Verify your ChatApp account
+2026-06-01 12:33:48 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-01 12:33:48 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:34:20 [info] Email sent to sivo.ademo@gmail.com: Verify your ChatApp account
+2026-06-01 12:34:22 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:34:32 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:34:32 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:34:54 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:35:06 [info] Email sent to marlonnhantumbo8@gmail.com: Verify your ChatApp account
+2026-06-01 12:35:23 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:35:23 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:35:25 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:36:07 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:36:42 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:36:42 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-01 12:36:42 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-01 12:36:42 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-01 12:37:14 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-01 12:37:14 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-01 12:37:14 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-01 12:37:45 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-01 12:37:45 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-01 13:26:42 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-01 13:28:41 [info] Firebase service account loaded from environment variables
+2026-06-01 13:28:41 [info] Firebase Admin SDK initialised
+2026-06-01 13:28:42 [info] Redis adapter initialized for Socket.IO
+2026-06-01 13:28:42 [info] Socket.IO server initialised
+2026-06-01 13:28:42 [info] Redis connected
+2026-06-01 13:29:16 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-01 13:30:50 [info] Firebase service account loaded from environment variables
+2026-06-01 13:30:50 [info] Firebase Admin SDK initialised
+2026-06-01 13:30:52 [info] Redis adapter initialized for Socket.IO
+2026-06-01 13:30:52 [info] Socket.IO server initialised
+2026-06-01 13:30:52 [info] Redis connected
+2026-06-01 13:33:02 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-01 13:35:00 [info] Email sent to leochima@gmail.com: Sua senha do ChatApp foi alterada

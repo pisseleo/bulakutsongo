@@ -57,6 +57,12 @@ export async function issueTokenPair(
     },
   });
 
+  // Set user status to online
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { status: 'online', last_seen: new Date() },
+  });
+
   // Access token expiry in seconds (parse from string like '15m')
   const accessExpirySeconds = parseDurationToSeconds(ACCESS_EXPIRES);
   return { user: user, accessToken, refreshToken, expiresIn: accessExpirySeconds };
@@ -130,6 +136,19 @@ export async function isBlacklisted(token: string): Promise<boolean> {
 export async function revokeSession(userId: string, accessToken: string): Promise<void> {
   await blacklistToken(accessToken);
   await prisma.session.deleteMany({ where: { user_id: userId, access_token: accessToken } });
+
+  // Check if user has any other active sessions
+  const remainingSessions = await prisma.session.count({
+    where: { user_id: userId },
+  });
+
+  // If no other sessions exist, set user status to offline
+  if (remainingSessions === 0) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status: 'offline', last_seen: new Date() },
+    });
+  }
 }
 
 /**
@@ -142,4 +161,10 @@ export async function revokeAllSessions(userId: string): Promise<void> {
   });
   await Promise.all(sessions.map((s: any) => blacklistToken(s.access_token)));
   await prisma.session.deleteMany({ where: { user_id: userId } });
+
+  // Set user status to offline when all sessions are revoked
+  await prisma.user.update({
+    where: { id: userId },
+    data: { status: 'offline', last_seen: new Date() },
+  });
 }

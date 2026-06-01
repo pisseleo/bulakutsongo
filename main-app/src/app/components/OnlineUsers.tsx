@@ -6,7 +6,7 @@ import { Users } from 'lucide-react';
 import { getOnlineUsers } from '@/services/chat.service';
 import clsx from 'clsx';
 
-interface OnlineUser {
+export interface OnlineUser {
   id: string;
   email: string;
   full_name: string;
@@ -16,10 +16,11 @@ interface OnlineUser {
 }
 
 interface OnlineUsersProps {
-  onSelectUser?: (userId: string) => void;
+  onSelectUser?: (user: OnlineUser) => void;
+  selectedUserId?: string;
 }
 
-export default function OnlineUsers({ onSelectUser }: OnlineUsersProps) {
+export default function OnlineUsers({ onSelectUser, selectedUserId }: OnlineUsersProps) {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,39 +76,60 @@ export default function OnlineUsers({ onSelectUser }: OnlineUsersProps) {
           </div>
         )}
 
-        {onlineUsers.map((user) => (
-          <button
-            key={user.id}
-            onClick={() => onSelectUser?.(user.id)}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-zinc-900 transition-colors group"
-          >
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              {user.profile_picture_url ? (
-                <Image
-                  src={user.profile_picture_url}
-                  alt={user.full_name}
-                  width={36}
-                  height={36}
-                  className="rounded-lg object-cover"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xs font-bold text-amber-400">
-                  {user.full_name[0]?.toUpperCase()}
-                </div>
+        {onlineUsers.map((user) => {
+          const isSelected = selectedUserId === user.id;
+          return (
+            <button
+              key={user.id}
+              onClick={() => onSelectUser?.(user)}
+              className={clsx(
+                'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors group',
+                isSelected
+                  ? 'bg-amber-500/15 border border-amber-500/30'
+                  : 'hover:bg-zinc-900 border border-transparent'
               )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-zinc-950" />
-            </div>
+            >
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                {user.profile_picture_url ? (
+                  <Image
+                    src={user.profile_picture_url}
+                    alt={user.full_name}
+                    width={36}
+                    height={36}
+                    className="rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className={clsx(
+                    'w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold',
+                    isSelected
+                      ? 'bg-amber-500/40 border border-amber-500/60 text-amber-300'
+                      : 'bg-amber-500/20 border border-amber-500/30 text-amber-400'
+                  )}>
+                    {user.full_name[0]?.toUpperCase()}
+                  </div>
+                )}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-zinc-950" />
+              </div>
 
-            {/* User Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-zinc-100 truncate group-hover:text-amber-400 transition-colors">
-                {user.full_name}
-              </p>
-              <p className="text-[10px] text-zinc-600 truncate">{user.email}</p>
-            </div>
-          </button>
-        ))}
+              {/* User Info */}
+              <div className="flex-1 min-w-0 text-left">
+                <p className={clsx(
+                  'text-xs font-medium truncate transition-colors',
+                  isSelected ? 'text-amber-400' : 'text-zinc-100 group-hover:text-amber-400'
+                )}>
+                  {user.full_name}
+                </p>
+                <p className="text-[10px] text-zinc-600 truncate">{user.email}</p>
+              </div>
+
+              {/* Active chat indicator */}
+              {isSelected && (
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

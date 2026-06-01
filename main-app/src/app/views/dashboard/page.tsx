@@ -76,7 +76,7 @@ export default function Dashboard() {
           </div>
           <div>
             <h1 className="font-bold text-lg">Bulakutsongo</h1>
-            <p className="text-xs text-zinc-500">Dashboard</p>
+            <p className="text-xs text-zinc-500">Painel Principal</p>
           </div>
         </div>
 

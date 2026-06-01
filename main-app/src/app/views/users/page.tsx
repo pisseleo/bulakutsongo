@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
-  Users, Search, Shield, CheckCircle, AlertCircle, ArrowLeft,
+  Users, Search, Shield, CheckCircle, ArrowLeft,
   Mail, Clock, MessageSquare
 } from 'lucide-react';
-import { getOnlineUsers, getCurrentUser } from '@/services/chat.service';
+import { getOnlineUsers } from '@/services/chat.service';
+import { createDirectConversation } from '@/services/chat.service';
 import { useAuth } from '@/context/Auth.context';
-import apiClient from '@/services/apiClient';
 import clsx from 'clsx';
 
 interface AllUser {
@@ -33,13 +33,13 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'online' | 'offline'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'last_seen' | 'joined'>('name');
+  const [openingChat, setOpeningChat] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/views/auth/login');
       return;
     }
-
     fetchAllUsers();
   }, [isLoading, isAuthenticated, router]);
 
@@ -50,7 +50,6 @@ export default function UsersPage() {
   const fetchAllUsers = async () => {
     try {
       setLoading(true);
-      // Fetch online users from the endpoint
       const users = await getOnlineUsers();
       setAllUsers(users || []);
     } catch (error) {
@@ -63,7 +62,6 @@ export default function UsersPage() {
   const filterAndSortUsers = () => {
     let result = [...allUsers];
 
-    // Search filter
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(u =>
@@ -72,28 +70,34 @@ export default function UsersPage() {
       );
     }
 
-    // Status filter
-    if (filter === 'online') {
-      result = result.filter(u => u.status === 'ONLINE');
-    } else if (filter === 'offline') {
-      result = result.filter(u => u.status === 'OFFLINE');
-    }
+    if (filter === 'online') result = result.filter(u => u.status === 'ONLINE');
+    else if (filter === 'offline') result = result.filter(u => u.status === 'OFFLINE');
 
-    // Sorting
     result.sort((a, b) => {
       switch (sortBy) {
-        case 'name':
-          return a.full_name.localeCompare(b.full_name);
-        case 'last_seen':
-          return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime();
-        case 'joined':
-          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-        default:
-          return 0;
+        case 'name': return a.full_name.localeCompare(b.full_name);
+        case 'last_seen': return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime();
+        case 'joined': return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        default: return 0;
       }
     });
 
     setFilteredUsers(result);
+  };
+
+  const handleOpenChat = async (user: AllUser) => {
+    try {
+      setOpeningChat(user.id);
+      // Create or find existing direct conversation, then navigate to chat with state
+      const conv = await createDirectConversation(user.id);
+      router.push(`/views/chat/chat?conversationId=${conv.id}&userId=${user.id}&userName=${encodeURIComponent(user.full_name)}`);
+    } catch (error) {
+      console.error('Failed to open chat:', error);
+      // Fallback: navigate to chat page and let it handle finding/creating the conversation
+      router.push(`/views/chat/chat?userId=${user.id}&userName=${encodeURIComponent(user.full_name)}`);
+    } finally {
+      setOpeningChat(null);
+    }
   };
 
   const onlineCount = allUsers.filter(u => u.status === 'ONLINE').length;
@@ -152,7 +156,6 @@ export default function UsersPage() {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          {/* Status Filter */}
           <div className="flex gap-2">
             {(['all', 'online', 'offline'] as const).map(f => (
               <button
@@ -172,7 +175,6 @@ export default function UsersPage() {
             ))}
           </div>
 
-          {/* Sort */}
           <div className="flex gap-2">
             <select
               value={sortBy}
@@ -202,7 +204,13 @@ export default function UsersPage() {
         ) : (
           <div className="divide-y divide-zinc-900">
             {filteredUsers.map((user, idx) => (
-              <UserItemRow key={user.id} user={user} index={idx} />
+              <UserItemRow
+                key={user.id}
+                user={user}
+                index={idx}
+                isOpening={openingChat === user.id}
+                onOpenChat={handleOpenChat}
+              />
             ))}
           </div>
         )}
@@ -213,14 +221,24 @@ export default function UsersPage() {
 
 // ─── User Item Row ────────────────────────────────────────────────────────────
 
-function UserItemRow({ user, index }: { user: AllUser; index: number }) {
+function UserItemRow({
+  user,
+  index,
+  isOpening,
+  onOpenChat,
+}: {
+  user: AllUser;
+  index: number;
+  isOpening: boolean;
+  onOpenChat: (user: AllUser) => void;
+}) {
   const isOnline = user.status === 'ONLINE';
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 hover:bg-zinc-950/50 transition-colors">
-      <div className="flex items-center gap-4">
+    <div className="flex items-center justify-between px-6 py-4 hover:bg-zinc-950/50 transition-colors group">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         {/* Avatar */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           {user.profile_picture_url ? (
             <Image
               src={user.profile_picture_url}
@@ -234,28 +252,26 @@ function UserItemRow({ user, index }: { user: AllUser; index: number }) {
               {user.full_name[0]?.toUpperCase()}
             </div>
           )}
-
-          {/* Online indicator */}
           {isOnline && (
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-black" />
           )}
         </div>
 
         {/* User Info */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <p className="text-sm font-semibold text-white">{user.full_name}</p>
+            <p className="text-sm font-semibold text-white truncate">{user.full_name}</p>
             {user.is_verified && (
-              <CheckCircle size={14} className="text-blue-400" title="Verificado" />
+              <CheckCircle size={14} className="text-blue-400 flex-shrink-0" title="Verificado" />
             )}
             {user.is_2fa_enabled && (
-              <Shield size={14} className="text-green-400" title="2FA Ativo" />
+              <Shield size={14} className="text-green-400 flex-shrink-0" title="2FA Ativo" />
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-1 text-xs text-zinc-500">
               <Mail size={12} />
-              {user.email}
+              <span className="truncate">{user.email}</span>
             </div>
             <div className="flex items-center gap-1 text-xs text-zinc-500">
               <Clock size={12} />
@@ -265,26 +281,44 @@ function UserItemRow({ user, index }: { user: AllUser; index: number }) {
         </div>
       </div>
 
-      {/* Status */}
-      <div className="flex items-center gap-3">
+      {/* Right side: status + chat button */}
+      <div className="flex items-center gap-3 flex-shrink-0 ml-4">
         <div className={clsx(
           'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium',
           isOnline
             ? 'bg-green-500/10 text-green-400 border border-green-500/20'
             : 'bg-zinc-900 text-zinc-500'
         )}>
-          <div className={clsx(
-            'w-2 h-2 rounded-full',
-            isOnline ? 'bg-green-500' : 'bg-zinc-600'
-          )} />
+          <div className={clsx('w-2 h-2 rounded-full', isOnline ? 'bg-green-500' : 'bg-zinc-600')} />
           {isOnline ? 'Online' : 'Offline'}
         </div>
+
+        {/* Chat button */}
+        <button
+          onClick={() => onOpenChat(user)}
+          disabled={isOpening}
+          className={clsx(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+            'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+            'hover:bg-amber-500 hover:text-black hover:border-amber-500',
+            'disabled:opacity-50 disabled:cursor-not-allowed',
+            'opacity-0 group-hover:opacity-100'
+          )}
+          title={`Conversar com ${user.full_name}`}
+        >
+          {isOpening ? (
+            <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <MessageSquare size={13} />
+          )}
+          Chat
+        </button>
       </div>
     </div>
   );
 }
 
-// ─── Helper Function ──────────────────────────────────────────────────────────
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
 function formatLastSeen(date: Date | string): string {
   const now = new Date();
@@ -298,6 +332,5 @@ function formatLastSeen(date: Date | string): string {
   if (diffMins < 60) return `${diffMins}m atrás`;
   if (diffHours < 24) return `${diffHours}h atrás`;
   if (diffDays < 7) return `${diffDays}d atrás`;
-
   return seen.toLocaleDateString('pt-PT');
 }

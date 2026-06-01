@@ -141,7 +141,7 @@ export default function LoginPage() {
 
         <div className={styles.links}>
           <Link href="/views/auth/register">Criar conta</Link>
-          <Link href="/views/auth/email-verification">Esqueceu a senha?</Link>
+          <Link href="/views/auth/forgot-password">Esqueceu a senha?</Link>
         </div>
       </div>
     </div>

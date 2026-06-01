@@ -41,7 +41,7 @@ export async function requestPasswordReset(email: string): Promise<{ message: st
   // Store the hashed token → userId mapping in Redis
   await setCache(`pwd_reset:${hashedToken}`, user.id, TOKEN_TTL_SECONDS);
 
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/views/auth/password-reset?token=${rawToken}`;
   await sendPasswordResetEmail(user.email, user.full_name, resetUrl);
 
   return GENERIC_RESPONSE;
