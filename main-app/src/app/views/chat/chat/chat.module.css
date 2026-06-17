@@ -526,3 +526,43 @@
 .profileBtn:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+/* ── Tab count badge ──────────────────────────────────────────────── */
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #075E54;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 5px;
+  line-height: 1;
+}
+
+.activeTab .tabCount {
+  background: #075E54;
+}
+
+/* ── Active conversation highlight ───────────────────────────────── */
+.activeConversation {
+  background: #e8f5e9 !important;
+  border-left: 3px solid #075E54;
+}
+
+/* ── Empty state (no groups yet) ─────────────────────────────────── */
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+  color: #495057;
+  font-size: 13px;
+}
+
+/* ── Group header badge in chat header ───────────────────────────── */
+.groupHeaderBadge {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+}

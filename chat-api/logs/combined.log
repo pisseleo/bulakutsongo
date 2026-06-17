@@ -1169,3 +1169,108 @@ Error: Socket.IO server not initialised
 2026-06-01 13:30:52 [info] Redis connected
 2026-06-01 13:33:02 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
 2026-06-01 13:35:00 [info] Email sent to leochima@gmail.com: Sua senha do ChatApp foi alterada
+2026-06-04 10:44:24 [info] Firebase service account loaded from environment variables
+2026-06-04 10:44:24 [info] Firebase Admin SDK initialised
+2026-06-04 10:44:25 [info] Redis adapter initialized for Socket.IO
+2026-06-04 10:44:25 [info] Socket.IO server initialised
+2026-06-04 10:44:25 [info] Redis connected
+2026-06-04 11:15:09 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 11:15:09 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 11:21:07 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 11:21:07 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 11:21:07 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 11:29:55 [info] Firebase service account loaded from environment variables
+2026-06-04 11:29:55 [info] Firebase Admin SDK initialised
+2026-06-04 11:29:56 [info] Redis adapter initialized for Socket.IO
+2026-06-04 11:29:56 [info] Socket.IO server initialised
+2026-06-04 11:29:56 [info] Redis connected
+2026-06-04 11:34:21 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 11:34:21 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:06:38 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:06:38 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-04 12:33:35 [info] Firebase service account loaded from environment variables
+2026-06-04 12:33:35 [info] Firebase Admin SDK initialised
+2026-06-04 12:33:36 [info] Redis adapter initialized for Socket.IO
+2026-06-04 12:33:36 [info] Socket.IO server initialised
+2026-06-04 12:33:36 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:36 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:37 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:37 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:37 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:38 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:38 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:39 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:40 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:41 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:42 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:43 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:44 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:54 [info] Firebase service account loaded from environment variables
+2026-06-04 12:33:54 [info] Firebase Admin SDK initialised
+2026-06-04 12:33:56 [info] Redis adapter initialized for Socket.IO
+2026-06-04 12:33:56 [info] Socket.IO server initialised
+2026-06-04 12:33:56 [info] Redis connected
+2026-06-04 12:35:02 [info] Email sent to adilshaguala84@gmail.com: Verify your ChatApp account
+2026-06-04 12:35:37 [info] Email sent to kevinchambule31@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-04 12:36:27 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-04 12:37:32 [info] Email sent to kevinchambule31@gmail.com: Sua senha do ChatApp foi alterada
+2026-06-04 12:38:00 [info] Email sent to leochima@gmail.com: Sua senha do ChatApp foi alterada
+2026-06-04 12:38:02 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:38:50 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:38:50 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:38:50 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:38:50 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 12:39:04 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-04 12:39:07 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:39:07 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:39:07 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 12:39:07 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:39:25 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:39:25 [info] Notification delivered via socket to user 5e6b4c70-0fd2-49af-97c4-4cbefc0e0058
+2026-06-04 12:39:25 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:39:25 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:41:34 [info] Firebase service account loaded from environment variables
+2026-06-04 12:41:34 [info] Firebase Admin SDK initialised
+2026-06-04 12:41:35 [info] Redis adapter initialized for Socket.IO
+2026-06-04 12:41:35 [info] Socket.IO server initialised
+2026-06-04 12:41:35 [info] Redis connected
+2026-06-04 12:44:15 [info] Email sent to leochima@gmail.com: Redifinir minha senha do Bulakustongo
+2026-06-04 12:45:31 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 12:47:27 [info] Notification delivered via socket to user 5e6b4c70-0fd2-49af-97c4-4cbefc0e0058
+2026-06-04 12:47:46 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:47:46 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:48:01 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:48:01 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 12:48:01 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:48:01 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:48:47 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:48:47 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:48:47 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:48:47 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 12:49:14 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:49:14 [info] Notification delivered via socket to user d866c24d-bef0-435c-bcc0-0c56f5ea65f0
+2026-06-04 12:49:14 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:49:14 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191
+2026-06-04 12:49:21 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:49:53 [info] Notification delivered via socket to user 5e6b4c70-0fd2-49af-97c4-4cbefc0e0058
+2026-06-04 12:53:32 [info] Notification delivered via socket to user 5e6b4c70-0fd2-49af-97c4-4cbefc0e0058
+2026-06-04 12:53:32 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:53:32 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:53:32 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:54:53 [info] Notification delivered via socket to user 13c9c5aa-b751-457c-95b3-0449fedf5642
+2026-06-04 12:54:53 [info] Notification delivered via socket to user addd485a-b3fe-4ff5-bae0-03add3672395
+2026-06-04 12:54:53 [info] Notification delivered via socket to user de03a288-336f-47b4-9f72-8d8d0543bdcd
+2026-06-04 12:54:53 [info] Notification delivered via socket to user 1e317f9a-2edc-4a2e-a046-52c65b88c191

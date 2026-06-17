@@ -18,14 +18,16 @@ import Navigation from '@/components/Navigation';
 import OnlineUsers, { type OnlineUser } from '@/components/OnlineUsers';
 import type { Conversation, ConversationMember, Message } from '@/types';
 
-// ─── Local display types ──────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type ConversationType = 'group' | 'direct';
 
 /** Flat shape used only inside this component for the selected-chat header. */
 type ChatType = {
   id: string;
   name: string;
   avatar: string;
-  type: 'group' | 'direct';
+  type: ConversationType;
   memberIds: string[];
   /** userId of the other participant — only for direct chats */
   userId?: string;
@@ -60,10 +62,9 @@ export default function Chat() {
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'groups' | 'users'>('groups');
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
-
   const [isMobile, setIsMobile] = useState(false);
 
-  // ── Refs ──────────────────────────────────────────────────────────────────
+  // ── Refs ───────────────────────────────────────────────────────────────────
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectedChatRef = useRef<ChatType | null>(null);
@@ -71,12 +72,10 @@ export default function Chat() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // ── Detect mobile view ────────────────────────────────────────────────────
+  // ── Detect mobile ──────────────────────────────────────────────────────────
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    handleResize(); // Check on mount
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -86,25 +85,26 @@ export default function Chat() {
   // ── Re-join socket room on reconnect ──────────────────────────────────────
   useEffect(() => {
     if (!socket || !isConnected || !selectedChat) return;
-    console.log('[Chat] 🔁 (Re)joining room after connect:', selectedChat.id);
     socket.emit('join_room', selectedChat.id);
   }, [socket, isConnected, selectedChat?.id]);
 
-  // ── Auth guard ────────────────────────────────────────────────────────────
+  // ── Auth guard ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.push('/views/auth/login');
   }, [isLoading, isAuthenticated, router]);
 
-  // ── Fetch conversations ───────────────────────────────────────────────────
+  // ── Fetch conversations ────────────────────────────────────────────────────
+  // Re-fetches when ?refresh=1 is present (e.g. after navigating back from create-group)
+  const refresh = searchParams.get('refresh');
   useEffect(() => {
     if (!isAuthenticated) return;
     (async () => {
       try { setConversations(await getConversations()); }
       catch (e) { console.error('Failed to fetch conversations', e); }
     })();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, refresh]);
 
-  // ── Deep-link: auto-open chat from query params (?userId=&userName=&conversationId=)
+  // ── Deep-link: auto-open chat (?userId=&userName=&conversationId=) ─────────
   useEffect(() => {
     if (!isAuthenticated || !authUser) return;
     const userId = searchParams.get('userId');
@@ -116,8 +116,7 @@ export default function Chat() {
       try {
         let conv: Conversation;
         if (conversationId) {
-          // Prefer the conversationId passed directly
-          conv = { id: conversationId, isGroup: false, members: [{ userId }] } as any;
+          conv = { id: conversationId, isGroup: false, conv_type: 'direct', members: [{ userId }] } as any;
         } else {
           conv = await createDirectConversation(userId);
         }
@@ -130,7 +129,6 @@ export default function Chat() {
           userId,
           online: false,
         });
-        // Clean up query params without a full navigation
         router.replace('/views/chat/chat');
       } catch (e) {
         console.error('Failed to open deep-linked chat', e);
@@ -144,12 +142,12 @@ export default function Chat() {
   // ── Fetch online users (refresh every 60 s) ───────────────────────────────
   useEffect(() => {
     if (!isAuthenticated) return;
-    const fetch = async () => {
+    const fetchUsers = async () => {
       try { setOnlineUsers(await getOnlineUsers()); }
       catch (e) { console.error('Failed to fetch online users', e); }
     };
-    fetch();
-    const id = setInterval(fetch, 60_000);
+    fetchUsers();
+    const id = setInterval(fetchUsers, 60_000);
     return () => clearInterval(id);
   }, [isAuthenticated]);
 
@@ -160,47 +158,31 @@ export default function Chat() {
     (async () => {
       try {
         const msgs: Message[] = await getMessages(selectedChat.id);
-        // API returns newest-first (cursor desc) — reverse for display
         setBubbles(msgs.slice().reverse().map(msgToBubble));
       } catch (e) { console.error('Failed to fetch messages', e); }
     })();
   }, [selectedChat?.id]);
 
-  // ── Auto-scroll ───────────────────────────────────────────────────────────
+  // ── Auto-scroll ────────────────────────────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [bubbles]);
 
-  // ── Socket.IO listeners ───────────────────────────────────────────────────
+  // ── Socket.IO listeners ────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket) return;
 
     const onMessageNew = (msg: any) => {
-      console.log('[Chat] 📨 Message new event:', { 
-        msgId: msg.id, 
-        conversationId: msg.conversation_id || msg.conversationId,
-        currentChatId: selectedChatRef.current?.id,
-        senderId: msg.sender_id || msg.senderId
-      });
-      
-      // Only append if the message belongs to the currently open conversation
-      if (msg.conversationId !== selectedChatRef.current?.id &&
-          msg.conversation_id !== selectedChatRef.current?.id) {
-        console.log('[Chat] ⚠️ Message ignored: different conversation');
-        return;
-      }
+      if (
+        msg.conversationId !== selectedChatRef.current?.id &&
+        msg.conversation_id !== selectedChatRef.current?.id
+      ) return;
 
       setBubbles((prev) => {
-        // Replace optimistic bubble (same id) or append
-        if (prev.some((b) => b.id === msg.id)) {
-          console.log('[Chat] ℹ️ Message already exists (optimistic), skipping');
-          return prev;
-        }
-        console.log('[Chat] ➕ Adding message to bubbles');
+        if (prev.some((b) => b.id === msg.id)) return prev;
         return [...prev, socketMsgToBubble(msg)];
       });
 
-      // Also update lastMessage preview in sidebar
       setConversations((prev) =>
         prev.map((c) =>
           c.id === (msg.conversationId ?? msg.conversation_id)
@@ -252,7 +234,7 @@ export default function Chat() {
     };
   }, [socket, isConnected, authUser?.id]);
 
-  // ── Emit typing indicator ─────────────────────────────────────────────────
+  // ── Emit typing indicator ──────────────────────────────────────────────────
   const handleTyping = useCallback(() => {
     if (!socket || !selectedChatRef.current) return;
     socket.emit('typing:start', { conversationId: selectedChatRef.current.id });
@@ -262,7 +244,7 @@ export default function Chat() {
     }, 4_000);
   }, [socket]);
 
-  // ── Send message ──────────────────────────────────────────────────────────
+  // ── Send message ───────────────────────────────────────────────────────────
   const handleSendMessage = async (
     text?: string,
     file?: File,
@@ -281,21 +263,13 @@ export default function Chat() {
 
     if (!content.trim() && !uploadFile) return;
 
-    console.log('[Chat] 📤 Sending message:', { 
-      conversationId: selectedChat.id, 
-      hasContent: !!content.trim(),
-      hasFile: !!uploadFile
-    });
-
-    // Stop typing
     if (socket) {
       socket.emit('typing:stop', { conversationId: selectedChat.id });
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     }
 
-    // Optimistic bubble
     const tempId = `temp-${Date.now()}`;
-    const now_date = new Date();
+    const now = new Date();
     setBubbles((prev) => [
       ...prev,
       {
@@ -303,8 +277,8 @@ export default function Chat() {
         text: content,
         senderId: authUser.id,
         senderName: authUser.full_name ?? authUser.email ?? 'You',
-        date: now_date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
-        time: now_date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         file: uploadFile ? URL.createObjectURL(uploadFile) : undefined,
         isAudio,
       },
@@ -318,12 +292,7 @@ export default function Chat() {
         file: uploadFile,
       });
 
-      // Swap optimistic bubble with confirmed one
-      setBubbles((prev) =>
-        prev.map((b) => b.id === tempId ? msgToBubble(saved) : b),
-      );
-
-      // Update sidebar lastMessage
+      setBubbles((prev) => prev.map((b) => b.id === tempId ? msgToBubble(saved) : b));
       setConversations((prev) =>
         prev.map((c) => c.id === selectedChat.id ? { ...c, lastMessage: saved } : c),
       );
@@ -366,32 +335,25 @@ export default function Chat() {
     }
   };
 
-  // ── Select chat + join socket room ────────────────────────────────────────
+  // ── Select chat + join socket room ─────────────────────────────────────────
   const selectChat = (chat: ChatType) => {
-    console.log('[Chat] 🔄 Switching chat:', { chatId: chat.id, chatName: chat.name });
-    
     if (socket && selectedChat?.id) {
-      console.log('[Chat] 📤 Leaving room:', selectedChat.id);
       socket.emit('leave_room', selectedChat.id);
     }
-    
     setSelectedChat(chat);
     setTypingUsers({});
-    
     if (socket) {
-      console.log('[Chat] 📥 Joining room:', chat.id);
       socket.emit('join_room', chat.id);
-    } else {
-      console.warn('[Chat] ⚠️ Socket not available when selecting chat');
     }
   };
 
-  // ── Open or create a DM with an online user ───────────────────────────────
+  // ── Open or create a DM ────────────────────────────────────────────────────
   const startUserChat = async (u: OnlineUser) => {
     try {
-      // Check existing direct conversation in state first
       const existing = conversations.find(
-        (c) => !c.isGroup && (c.members ?? []).some((m: ConversationMember) => m.userId === u.id),
+        (c) =>
+          (c.type === 'direct' || !c.isGroup) &&
+          (c.members ?? []).some((m: ConversationMember) => m.userId === u.id),
       );
       if (existing) {
         selectChat(convToChat(existing, u));
@@ -405,14 +367,19 @@ export default function Chat() {
     }
   };
 
-  // ── Derive lists ─────────────────────────────────────────────────────────
-  const groupConversations = conversations.filter((c) => c.isGroup);
-  // Only show online users who are not the logged-in user
-  const onlineList  = onlineUsers.filter((u) => u.status === 'online' && u.id !== authUser?.id);
-  const offlineList = onlineUsers.filter((u) => u.status !== 'online' && u.id !== authUser?.id);
+  // ── Derived lists ──────────────────────────────────────────────────────────
+  // FIX: filter by both `type === 'group'` and legacy `isGroup` boolean
+  const groupConversations = conversations.filter(
+    (c) => c.conv_type === 'group' || c.isGroup,
+  );
+  const directConversations = conversations.filter(
+    (c) => c.conv_type === 'direct' || (!c.isGroup && c.conv_type !== 'group'),
+  );
+  const onlineList  = onlineUsers.filter((u) => u.status === 'online'  && u.id !== authUser?.id);
+  const offlineList = onlineUsers.filter((u) => u.status !== 'online'  && u.id !== authUser?.id);
   const typingLabel = Object.keys(typingUsers).length > 0 ? 'typing…' : null;
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-screen bg-emerald-600 text-white">
       <Navigation currentPage="chat" />
@@ -431,27 +398,53 @@ export default function Chat() {
                   ? <Wifi size={14} className="text-green-400" />
                   : <WifiOff size={14} className="text-red-400" />}
               </span>
-              <button className={styles.profileBtn} onClick={() => router.push('/views/auth/profile')}>
+              <button
+                className={styles.profileBtn}
+                onClick={() => router.push('/views/auth/profile')}
+              >
                 <User size={18} />
               </button>
-              <button className={styles.groupBtn} onClick={() => router.push('/views/chat/create-group')}>
+              <button
+                className={styles.groupBtn}
+                onClick={() => router.push('/views/chat/create-group')}
+                title="Criar grupo"
+              >
                 <PlusCircle size={18} className="text-gray-50" />
               </button>
-              <button className={styles.logoutBtn} onClick={() => {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                window.location.href = '/views/auth/login';
-              }}>
+              <button
+                className={styles.logoutBtn}
+                onClick={() => {
+                  localStorage.removeItem('access_token');
+                  localStorage.removeItem('refresh_token');
+                  window.location.href = '/views/auth/login';
+                }}
+              >
                 <LogOutIcon size={18} className="text-gray-50" />
               </button>
             </div>
           </div>
 
+          {/* Tabs */}
           <div className={styles.tabs}>
-            <button className={`${styles.tab} ${activeTab === 'groups' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('groups')}><UsersIcon /> Groups</button>
-            <button className={`${styles.tab} ${activeTab === 'users' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('users')}>👤 Users</button>
+            <button
+              className={`${styles.tab} ${activeTab === 'groups' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('groups')}
+            >
+              <UsersIcon size={14} style={{ display: 'inline', marginRight: 4 }} />
+              Grupos
+              {groupConversations.length > 0 && (
+                <span className={styles.tabCount}>{groupConversations.length}</span>
+              )}
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === 'users' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('users')}
+            >
+              👤 Utilizadores
+              {onlineList.length > 0 && (
+                <span className={styles.tabCount}>{onlineList.length}</span>
+              )}
+            </button>
           </div>
 
           <div className={styles.search}>
@@ -459,121 +452,91 @@ export default function Chat() {
           </div>
 
           <div className={styles.conversationsList}>
-            {/* Mobile: show combined list; Desktop: show tab-based list */}
+
+            {/* ── MOBILE: combined view ─────────────────────────────────── */}
             {isMobile ? (
-              // MOBILE: Combined list with groups and users
               <>
                 {groupConversations.length > 0 && (
                   <div className={styles.sectionHeader}>👥 Groups ({groupConversations.length})</div>
                 )}
                 {groupConversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  className={`${styles.conversationItem} ${selectedChat?.id === conv.id ? styles.activeConversation : ''}`}
-                  onClick={() => selectChat({
-                    id: conv.id,
-                    name: conv.name ?? 'Group',
-                    avatar: conv.name?.[0] ?? '👥',
-                    type: 'group',
-                    // ConversationMember has userId (camelCase) per the type definition
-                    memberIds: (conv.members ?? []).map((m: ConversationMember) => m.userId),
-                  })}
-                >
-                  <div className={styles.conversationAvatar}>{conv.name?.[0] ?? '👥'}</div>
-                  <div className={styles.conversationInfo}>
-                    <div className={styles.conversationName}>{conv.name ?? 'Group'}</div>
-                    {/* lastMessage — not messages[] — per the Conversation type */}
-                    {conv.lastMessage && (
-                      <div className={styles.conversationLastMsg}>
-                        {conv.lastMessage.content || '📎 anexos'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                  <GroupItem
+                    key={conv.id}
+                    conv={conv}
+                    isActive={selectedChat?.id === conv.id}
+                    onSelect={() =>
+                      selectChat({
+                        id: conv.id,
+                        name: conv.name ?? 'Group',
+                        avatar: conv.name?.[0]?.toUpperCase() ?? '👥',
+                        type: 'group',
+                        memberIds: (conv.members ?? []).map((m: ConversationMember) => m.userId),
+                      })
+                    }
+                    styles={styles}
+                  />
+                ))}
+
                 {onlineList.length > 0 && (
                   <div className={styles.sectionHeader}>🟢 Online ({onlineList.length})</div>
                 )}
                 {onlineList.map((u) => (
-                  <div key={u.id} className={styles.conversationItem} onClick={() => startUserChat(u)}>
-                    <div className={styles.conversationAvatar}>{u.full_name?.[0] ?? '👤'}</div>
-                    <div className={styles.conversationInfo}>
-                      <div className={styles.conversationName}>
-                        {u.full_name} <span className={styles.onlineBadge}>🟢</span>
-                      </div>
-                      <div className={styles.conversationLastMsg}>{u.email}</div>
-                    </div>
-                  </div>
+                  <UserItem key={u.id} user={u} isOnline onClick={() => startUserChat(u)} styles={styles} />
                 ))}
                 {offlineList.length > 0 && (
                   <div className={styles.sectionHeader}>⚫ Offline ({offlineList.length})</div>
                 )}
                 {offlineList.map((u) => (
-                  <div key={u.id} className={styles.conversationItem} style={{ opacity: 0.6 }}
-                    onClick={() => startUserChat(u)}>
-                    <div className={styles.conversationAvatar}>{u.full_name?.[0] ?? '👤'}</div>
-                    <div className={styles.conversationInfo}>
-                      <div className={styles.conversationName}>{u.full_name}</div>
-                      <div className={styles.conversationLastMsg}>{u.email}</div>
-                    </div>
-                  </div>
+                  <UserItem key={u.id} user={u} isOnline={false} onClick={() => startUserChat(u)} styles={styles} />
                 ))}
               </>
             ) : (
-              // DESKTOP: Tab-based list
+              /* ── DESKTOP: tab view ──────────────────────────────────────── */
               <>
                 {activeTab === 'groups' ? (
-                  groupConversations.map((conv) => (
-                    <div
-                      key={conv.id}
-                      className={`${styles.conversationItem} ${selectedChat?.id === conv.id ? styles.activeConversation : ''}`}
-                      onClick={() => selectChat({
-                        id: conv.id,
-                        name: conv.name ?? 'Group',
-                        avatar: conv.name?.[0] ?? '👥',
-                        type: 'group',
-                        memberIds: (conv.members ?? []).map((m: ConversationMember) => m.userId),
-                      })}
-                    >
-                      <div className={styles.conversationAvatar}>{conv.name?.[0] ?? '👥'}</div>
-                      <div className={styles.conversationInfo}>
-                        <div className={styles.conversationName}>{conv.name ?? 'Group'}</div>
-                        {conv.lastMessage && (
-                          <div className={styles.conversationLastMsg}>
-                            {conv.lastMessage.content || '📎 anexos'}
-                          </div>
-                        )}
+                  <>
+                    {groupConversations.length === 0 ? (
+                      <div className={styles.emptyState}>
+                        <div style={{ fontSize: 32 }}>👥</div>
+                        <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>No groups yet</p>
+                        <small style={{ color: '#888' }}>Create one with the + button above</small>
                       </div>
-                    </div>
-                  ))
+                    ) : (
+                      groupConversations.map((conv) => (
+                        <GroupItem
+                          key={conv.id}
+                          conv={conv}
+                          isActive={selectedChat?.id === conv.id}
+                          onSelect={() =>
+                            selectChat({
+                              id: conv.id,
+                              name: conv.name ?? 'Group',
+                              avatar: conv.name?.[0]?.toUpperCase() ?? '👥',
+                              type: 'group',
+                              memberIds: (conv.members ?? []).map((m: ConversationMember) => m.userId),
+                            })
+                          }
+                          styles={styles}
+                        />
+                      ))
+                    )}
+                  </>
                 ) : (
                   <>
                     {onlineList.length > 0 && (
                       <div className={styles.sectionHeader}>🟢 Online ({onlineList.length})</div>
                     )}
                     {onlineList.map((u) => (
-                      <div key={u.id} className={styles.conversationItem} onClick={() => startUserChat(u)}>
-                        <div className={styles.conversationAvatar}>{u.full_name?.[0] ?? '👤'}</div>
-                        <div className={styles.conversationInfo}>
-                          <div className={styles.conversationName}>
-                            {u.full_name} <span className={styles.onlineBadge}>🟢</span>
-                          </div>
-                          <div className={styles.conversationLastMsg}>{u.email}</div>
-                        </div>
-                      </div>
+                      <UserItem key={u.id} user={u} isOnline onClick={() => startUserChat(u)} styles={styles} />
                     ))}
+
+                 
+
                     {offlineList.length > 0 && (
                       <div className={styles.sectionHeader}>⚫ Offline ({offlineList.length})</div>
                     )}
                     {offlineList.map((u) => (
-                      <div key={u.id} className={styles.conversationItem} style={{ opacity: 0.6 }}
-                        onClick={() => startUserChat(u)}>
-                        <div className={styles.conversationAvatar}>{u.full_name?.[0] ?? '👤'}</div>
-                        <div className={styles.conversationInfo}>
-                          <div className={styles.conversationName}>{u.full_name}</div>
-                          <div className={styles.conversationLastMsg}>{u.email}</div>
-                        </div>
-                      </div>
+                      <UserItem key={u.id} user={u} isOnline={false} onClick={() => startUserChat(u)} styles={styles} />
                     ))}
                   </>
                 )}
@@ -582,7 +545,7 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* ── Chat area ─────────────────────────────────────────────────────── */}
+        {/* ── Chat area ──────────────────────────────────────────────────────── */}
         <div className={styles.chatArea}>
           {selectedChat ? (
             <>
@@ -591,11 +554,13 @@ export default function Chat() {
                 <div>
                   <h3>{selectedChat.name}</h3>
                   <small>
-                    {typingLabel
-                      ? <span className="animate-pulse">{typingLabel}</span>
-                      : selectedChat.type === 'direct'
-                        ? selectedChat.online ? '🟢 Online' : '⚫ Offline'
-                        : 'Group'}
+                    {typingLabel ? (
+                      <span className="animate-pulse">{typingLabel}</span>
+                    ) : selectedChat.type === 'direct' ? (
+                      selectedChat.online ? '🟢 Online' : '⚫ Offline'
+                    ) : (
+                      `Group · ${selectedChat.memberIds.length} member${selectedChat.memberIds.length !== 1 ? 's' : ''}`
+                    )}
                   </small>
                 </div>
               </div>
@@ -609,50 +574,61 @@ export default function Chat() {
                 {bubbles.map((b) => {
                   const isSentByMe = b.senderId === authUser?.id;
                   return (
-                  <div
-                    key={b.id}
-                    className={`${styles.message} ${
-                      isSentByMe ? styles.messageSent : styles.messageReceived
-                    } ${b.id.startsWith('temp-') ? 'opacity-60' : ''}`}
-                  >
-                    {/* Show sender name only for received messages */}
-                    {!isSentByMe && (
-                      <div className={styles.senderName}>{b.senderName}</div>
-                    )}
-                    
-                    {b.file && b.isAudio ? (
-                      <audio controls src={b.file} className={styles.audioPlayer} />
-                    ) : b.file ? (
-                      <div>
-                        {b.text && <div className={styles.messageText}>{b.text}</div>}
-                        {/\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(b.file) ? (
-                          <Image src={b.file} alt="anexos" width={200} height={200}
-                            className={styles.previewImage} />
-                        ) : (
-                          <a href={b.file} download className={styles.fileLink}>
-                            📄 Download file
-                          </a>
-                        )}
+                    <div
+                      key={b.id}
+                      className={`${styles.message} ${
+                        isSentByMe ? styles.messageSent : styles.messageReceived
+                      } ${b.id.startsWith('temp-') ? 'opacity-60' : ''}`}
+                    >
+                      {!isSentByMe && (
+                        <div className={styles.senderName}>{b.senderName}</div>
+                      )}
+
+                      {b.file && b.isAudio ? (
+                        <audio controls src={b.file} className={styles.audioPlayer} />
+                      ) : b.file ? (
+                        <div>
+                          {b.text && <div className={styles.messageText}>{b.text}</div>}
+                          {/\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(b.file) ? (
+                            <Image
+                              src={b.file}
+                              alt="anexos"
+                              width={200}
+                              height={200}
+                              className={styles.previewImage}
+                            />
+                          ) : (
+                            <a href={b.file} download className={styles.fileLink}>
+                              📄 Download file
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <div className={styles.messageText}>{b.text}</div>
+                      )}
+
+                      <div className={styles.messageFooter}>
+                        <span className={styles.messageDate}>{b.date}</span>
+                        <span className={styles.messageTime}>{b.time}</span>
                       </div>
-                    ) : (
-                      <div className={styles.messageText}>{b.text}</div>
-                    )}
-                    <div className={styles.messageFooter}>
-                      <span className={styles.messageDate}>{b.date}</span>
-                      <span className={styles.messageTime}>{b.time}</span>
                     </div>
-                  </div>
                   );
                 })}
                 <div ref={messagesEndRef} />
               </div>
 
               <div className={styles.inputArea}>
-                <input type="file" ref={fileInputRef} onChange={handleFileUpload}
-                  style={{ display: 'none' }} />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
                 <button onClick={() => fileInputRef.current?.click()}>📎</button>
-                <button onClick={isRecording ? stopRecording : startRecording}
-                  style={{ color: isRecording ? 'red' : undefined }}>
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  style={{ color: isRecording ? 'red' : undefined }}
+                >
                   {isRecording ? '🔴' : '🎤'}
                 </button>
                 <input
@@ -679,7 +655,7 @@ export default function Chat() {
           )}
         </div>
 
-        {/* ── Online users panel (hidden on mobile) ─────────────────────────── */}
+        {/* ── Online users panel (hidden on mobile) ──────────────────────────── */}
         <div className="hidden lg:block w-56 flex-shrink-0">
           <OnlineUsers
             selectedUserId={selectedChat?.userId}
@@ -691,26 +667,105 @@ export default function Chat() {
   );
 }
 
-// ─── Pure helpers (no hooks) ──────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-/** Map a typed Message (from REST API) to a display bubble. */
+/** Renders a single group conversation row with public/private badge. */
+function GroupItem({
+  conv,
+  isActive,
+  onSelect,
+  styles,
+}: {
+  conv: Conversation;
+  isActive: boolean;
+  onSelect: () => void;
+  styles: Record<string, string>;
+}) {
+  // Resolve public vs private from the conversation's attributes.
+  // The API may return conv.type as 'public'|'private'|'group', or a separate groupType field.
+  const isPublic =
+    (conv as any).groupType === 'group' ||
+    (conv as any).subType === 'group' ||
+    conv?.conv_type === 'group';
+
+  const memberCount = conv.members?.length ?? 0;
+
+  return (
+    <div
+      className={`${styles.conversationItem} ${isActive ? styles.activeConversation : ''}`}
+      onClick={onSelect}
+    >
+      <div className={styles.conversationAvatar}>
+        {conv.name?.[0]?.toUpperCase() ?? '👥'}
+      </div>
+      <div className={styles.conversationInfo}>
+        <div className={styles.conversationName}>
+          {conv.name ?? 'Group'}
+          <span
+            className={`${styles.groupBadge} ${
+              isPublic ? styles.publicBadge : styles.privateBadge
+            }`}
+          >
+            {isPublic ? '🌐 Public' : '🔒 Private'}
+          </span>
+        </div>
+        <div className={styles.conversationLastMsg}>
+          {conv.lastMessage
+            ? conv.lastMessage.content || '📎 anexos'
+            : `${memberCount} member${memberCount !== 1 ? 's' : ''}`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Renders a single user row (online or offline). */
+function UserItem({
+  user,
+  isOnline,
+  onClick,
+  styles,
+}: {
+  user: any;
+  isOnline: boolean;
+  onClick: () => void;
+  styles: Record<string, string>;
+}) {
+  return (
+    <div
+      className={styles.conversationItem}
+      style={{ opacity: isOnline ? 1 : 0.6 }}
+      onClick={onClick}
+    >
+      <div className={styles.conversationAvatar}>{user.full_name?.[0] ?? '👤'}</div>
+      <div className={styles.conversationInfo}>
+        <div className={styles.conversationName}>
+          {user.full_name}
+          <span className={isOnline ? styles.onlineBadge : styles.offlineBadge}>
+            {isOnline ? '🟢' : '⚫'}
+          </span>
+        </div>
+        <div className={styles.conversationLastMsg}>{user.email}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
+
 function msgToBubble(msg: any): MessageBubble {
-  // API returns snake_case, so handle both formats
   const createdAtStr = msg.createdAt || msg.created_at;
   const senderId = msg.senderId || msg.sender_id;
   const senderName = msg.sender?.full_name || msg.sender_name || msg.sender?.email || 'Unknown';
-  
-  // Parse date safely - handle ISO string
+
   let date: Date;
   try {
     date = new Date(createdAtStr);
-    if (isNaN(date.getTime())) {
-      date = new Date();
-    }
+    if (isNaN(date.getTime())) date = new Date();
   } catch {
     date = new Date();
   }
-  
+
   return {
     id: msg.id,
     text: msg.content ?? '',
@@ -719,32 +774,23 @@ function msgToBubble(msg: any): MessageBubble {
     date: date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
     time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     file: msg.media_url ?? undefined,
-    // Message.media_type uses lowercase: 'voice' | 'image' | 'video' | 'document'
     isAudio: msg.media_type === 'voice' || msg.media_type === 'VOICE',
   };
 }
 
-/**
- * Map a raw socket payload (snake_case from the server emit) to a display bubble.
- * The server emits the Prisma row directly so fields are snake_case.
- */
 function socketMsgToBubble(msg: any): MessageBubble {
-  // Handle both snake_case and camelCase formats
   const createdAtStr = msg.created_at || msg.createdAt;
   const senderId = msg.sender_id || msg.senderId;
   const senderName = msg.sender?.full_name || msg.sender_name || msg.sender?.email || 'Unknown';
-  
-  // Parse date safely - handle ISO string
+
   let date: Date;
   try {
     date = new Date(createdAtStr ?? Date.now());
-    if (isNaN(date.getTime())) {
-      date = new Date();
-    }
+    if (isNaN(date.getTime())) date = new Date();
   } catch {
     date = new Date();
   }
-  
+
   return {
     id: msg.id,
     text: msg.content ?? '',
@@ -757,10 +803,6 @@ function socketMsgToBubble(msg: any): MessageBubble {
   };
 }
 
-/**
- * Coerce a raw socket payload into the Message shape so we can store it
- * as Conversation.lastMessage (which is typed as Message).
- */
 function normaliseApiMessage(raw: any): Message {
   return {
     id: raw.id,
@@ -776,20 +818,20 @@ function normaliseApiMessage(raw: any): Message {
 }
 
 /**
- * Build a ChatType header object from a Conversation + the other participant's
- * profile (for direct chats) or just the conversation for groups.
+ * Build a ChatType header object from a Conversation.
+ * FIX: uses conv.type ('group' | 'direct') as primary signal; falls back to isGroup boolean.
  */
 function convToChat(conv: Conversation, otherUser?: any): ChatType {
-  const name = conv.isGroup
+  const isGroup = conv.conv_type === 'group' || conv.isGroup;
+  const name = isGroup
     ? (conv.name ?? 'Group')
     : (otherUser?.full_name ?? otherUser?.name ?? 'User');
 
   return {
     id: conv.id,
     name,
-    avatar: name[0] ?? '👤',
-    type: conv.isGroup ? 'group' : 'direct',
-    // ConversationMember.userId is camelCase per type definition
+    avatar: name[0]?.toUpperCase() ?? '👤',
+    type: isGroup ? 'group' : 'direct',
     memberIds: (conv.members ?? []).map((m: ConversationMember) => m.userId),
     userId: otherUser?.id,
     online: otherUser?.status === 'online',

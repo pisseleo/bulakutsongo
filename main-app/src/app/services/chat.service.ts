@@ -106,7 +106,8 @@ export async function createDirectConversation(userId: string): Promise<Conversa
 // POST /conversations (for group creation)
 export async function createGroupConversation(name: string, memberIds: string[]): Promise<Conversation> {
   const response = await apiClient.post<ApiResponse<Conversation>>('/conversations', {
-    type: 'group',
+    conv_type: 'group',
+    isGroup: true,
     name,
     memberIds,
   });

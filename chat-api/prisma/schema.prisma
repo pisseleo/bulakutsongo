@@ -120,6 +120,7 @@ model User2FA {
 model Conversation {
   id         String   @id @default(uuid())
   name       String? // null para conversas diretas (1-1)
+  conv_type String @default("direct")// 'direct' ou 'group'
   is_group   Boolean  @default(false)
   created_by String
   created_at DateTime @default(now())

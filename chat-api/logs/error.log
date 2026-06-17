@@ -1001,3 +1001,29 @@ Error: Socket.IO server not initialised
 Error: Socket.IO server not initialised
     at getSocketServer (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/socket/socket.ts:21:18)
     at sendMessage (/home/leochihale/Documents/Informatica_4ano/S.Distribuidos/sistemachat/bulakutsongo/chat-api/src/controllers/Message.controller.ts:66:29)
+2026-06-04 12:33:36 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:36 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:37 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:37 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:37 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:38 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:38 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:39 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:40 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:41 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:42 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:43 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+2026-06-04 12:33:44 [error] Error: getaddrinfo ENOTFOUND http://10.39.94.213
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)

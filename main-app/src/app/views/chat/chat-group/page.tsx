@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Users, UserPlus, UserMinus, Crown, Settings, X, Search,
-  Check, ArrowLeft, ChevronRight
+  Check, ArrowLeft, ChevronRight, Info
 } from 'lucide-react';
 import { useAuth } from '@/context/Auth.context';
 import { createConversation, addMember, removeMember, getConversations } from '@/services/chat.service';
@@ -22,8 +22,17 @@ export default function ChatGroupPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const groups = conversations.filter(c => c.type === 'group');
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const groups = conversations.filter(c => c.conv_type === 'group');
 
   useEffect(() => {
     getConversations()
@@ -44,24 +53,9 @@ export default function ChatGroupPage() {
     setActiveConvo(updated);
   };
 
-  if (activeConvo && !showManage) {
-    return (
-      <div className="flex h-full">
-        <ChatRoom
-          conversation={activeConvo}
-          onBack={() => setActiveConvo(null)}
-        />
-        <div className="w-px bg-zinc-900" />
-        <button
-          onClick={() => setShowManage(true)}
-          className="flex-shrink-0 flex flex-col items-center justify-center w-10 bg-zinc-950 hover:bg-zinc-900 transition-colors border-l border-zinc-900"
-          title="Informações do grupo">
-          <Users size={16} className="text-zinc-500" />
-        </button>
-      </div>
-    );
-  }
-
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mobile: full‑screen group info panel
+  // ─────────────────────────────────────────────────────────────────────────
   if (activeConvo && showManage) {
     return (
       <GroupManagePanel
@@ -69,10 +63,65 @@ export default function ChatGroupPage() {
         currentUserId={user!.id}
         onBack={() => setShowManage(false)}
         onUpdate={handleMemberUpdate}
+        isMobile={isMobile}
       />
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Active conversation view (chat room)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (activeConvo && !showManage) {
+    return (
+      <div className={clsx('flex h-full', isMobile ? 'flex-col' : 'flex-row')}>
+        {/* Main chat area */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          {/* Mobile header with back and info buttons */}
+          {isMobile && (
+            <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-900 bg-black">
+              <button
+                onClick={() => setActiveConvo(null)}
+                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                aria-label="Back to groups"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h2 className="font-medium text-sm truncate max-w-[60%]">{activeConvo.name}</h2>
+              <button
+                onClick={() => setShowManage(true)}
+                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                aria-label="Group info"
+              >
+                <Info size={18} />
+              </button>
+            </div>
+          )}
+          <ChatRoom
+            conversation={activeConvo}
+            onBack={isMobile ? () => setActiveConvo(null) : undefined}
+          />
+        </div>
+
+        {/* Desktop: side info button */}
+        {!isMobile && (
+          <>
+            <div className="w-px bg-zinc-900" />
+            <button
+              onClick={() => setShowManage(true)}
+              className="flex-shrink-0 flex flex-col items-center justify-center w-10 bg-zinc-950 hover:bg-zinc-900 transition-colors border-l border-zinc-900"
+              title="Informações do grupo"
+            >
+              <Users size={16} className="text-zinc-500" />
+            </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Group list view
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full bg-black">
       {/* Header */}
@@ -119,7 +168,7 @@ export default function ChatGroupPage() {
   );
 }
 
-// ─── Group List Item ──────────────────────────────────────────────────────────
+// ─── Group List Item (unchanged) ──────────────────────────────────────────────
 
 function GroupListItem({ group, onClick }: { group: Conversation; onClick: () => void }) {
   const initials = group.isGroup ? group.name?.[0]?.toUpperCase() || 'G' : group.members.find(m => m.userId !== group.members[0].userId)?.user.full_name[0]?.toUpperCase() || 'U';
@@ -157,7 +206,7 @@ function GroupListItem({ group, onClick }: { group: Conversation; onClick: () =>
   );
 }
 
-// ─── Create Group Modal ───────────────────────────────────────────────────────
+// ─── Create Group Modal (unchanged) ───────────────────────────────────────────
 
 function CreateGroupModal({
   onClose, onCreate
@@ -216,7 +265,6 @@ function CreateGroupModal({
               placeholder="Pesquisar utilizadores..." icon={<Search size={15} />} />
           </FormField>
 
-          {/* Selected chips */}
           {selected.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {selected.map(u => (
@@ -230,7 +278,6 @@ function CreateGroupModal({
             </div>
           )}
 
-          {/* Search results */}
           <div className="max-h-48 overflow-y-auto -mx-5 px-5 flex flex-col gap-1">
             {loading && <p className="text-xs text-zinc-600 text-center py-3">A pesquisar...</p>}
             {users.map(u => {
@@ -268,13 +315,16 @@ function CreateGroupModal({
   );
 }
 
-// ─── Group Manage Panel ───────────────────────────────────────────────────────
+// ─── Group Manage Panel (updated with responsive full-screen) ─────────────────
 
-function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
+function GroupManagePanel({ 
+  conversation, currentUserId, onBack, onUpdate, isMobile 
+}: { 
   conversation: Conversation;
   currentUserId: string;
   onBack: () => void;
   onUpdate: (c: Conversation) => void;
+  isMobile: boolean;
 }) {
   const isAdmin = conversation.members.find(m => m.userId === currentUserId)?.role === 'admin';
   const [search, setSearch] = useState('');
@@ -311,6 +361,89 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
     } catch {} finally { setLoading(null); }
   };
 
+  // Mobile: full-screen overlay
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-900 bg-black sticky top-0">
+          <button onClick={onBack} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <h2 className="font-bold text-sm">Informações do Grupo</h2>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="flex flex-col items-center gap-3 py-6 border-b border-zinc-900">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl font-bold">
+              {conversation.name?.[0]?.toUpperCase()}
+            </div>
+            <div className="text-center">
+              <h3 className="font-bold">{conversation.name}</h3>
+              <p className="text-xs text-zinc-500">{conversation.members.length} membros</p>
+            </div>
+          </div>
+
+          {isAdmin && (
+            <div className="px-4 py-3 border-b border-zinc-900">
+              <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-2">Adicionar Membros</p>
+              <Input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Pesquisar para adicionar..." icon={<Search size={14} />} />
+              {users.length > 0 && (
+                <div className="mt-2 flex flex-col gap-1 max-h-32 overflow-y-auto">
+                  {users.map(u => (
+                    <button key={u.id} onClick={() => handleAdd(u.id)} disabled={addLoading}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-900 text-left transition-colors">
+                      <div className="w-6 h-6 rounded-md bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400 flex-shrink-0">
+                        {u.full_name[0]}
+                      </div>
+                      <span className="text-xs flex-1 truncate">{u.full_name}</span>
+                      <UserPlus size={12} className="text-amber-400" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-3">Membros</p>
+            <div className="flex flex-col gap-1">
+              {conversation.members.map(member => (
+                <div key={member.userId}
+                  className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-zinc-950 group">
+                  <div className="w-8 h-8 rounded-xl bg-zinc-900 flex items-center justify-center text-xs font-bold text-zinc-400 flex-shrink-0">
+                    {member.user.profile_picture_url
+                      ? <Image src={member.user.profile_picture_url} alt="" width={32} height={32} className="rounded-xl" />
+                      : member.user.full_name[0].toUpperCase()
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-medium truncate">{member.user.full_name}</p>
+                      {member.role === 'admin' && (
+                        <Crown size={10} className="text-amber-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-zinc-600">@{member.user.email}</p>
+                  </div>
+                  {isAdmin && member.userId !== currentUserId && (
+                    <button onClick={() => handleRemove(member.userId)} disabled={loading === member.userId}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                      {loading === member.userId
+                        ? <div className="w-3 h-3 border border-zinc-600 border-t-transparent rounded-full animate-spin" />
+                        : <UserMinus size={13} />
+                      }
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: side panel as before
   return (
     <div className="flex flex-col h-full bg-black w-80 border-l border-zinc-900">
       <div className="flex items-center gap-3 px-4 py-3.5 border-b border-zinc-900">
@@ -320,7 +453,6 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
         <h2 className="font-bold text-sm">Informações do Grupo</h2>
       </div>
 
-      {/* Group header */}
       <div className="flex flex-col items-center gap-3 py-6 border-b border-zinc-900">
         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl font-bold">
           {conversation.name?.[0]?.toUpperCase()}
@@ -331,7 +463,6 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
         </div>
       </div>
 
-      {/* Add member (admin only) */}
       {isAdmin && (
         <div className="px-4 py-3 border-b border-zinc-900">
           <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-2">Adicionar Membros</p>
@@ -354,7 +485,6 @@ function GroupManagePanel({ conversation, currentUserId, onBack, onUpdate }: {
         </div>
       )}
 
-      {/* Members list */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600 mb-3">Membros</p>
         <div className="flex flex-col gap-1">

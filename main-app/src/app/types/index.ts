@@ -95,7 +95,7 @@ export interface Conversation {
   isGroup: boolean;
   members: ConversationMember[];
   lastMessage?: Message;
-  type: ConversationType;
+  conv_type: ConversationType;
   unreadCount?: number;
   createdAt: string;
   updatedAt: string;

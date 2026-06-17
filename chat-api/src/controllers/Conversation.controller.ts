@@ -32,10 +32,11 @@ async function isGlobalAdmin(userId: string): Promise<boolean> {
 // ──────────────────────────────────────────────────────────────────
 export async function createConversation(req: Request, res: Response): Promise<void> {
   const { user } = req as AuthenticatedRequest;
-  const { name, memberIds, isGroup } = req.body as {
+  const { name, memberIds, isGroup, conv_type } = req.body as {
     name?: string;
     memberIds: string[];
     isGroup?: boolean;
+    conv_type?: string;
   };
 
   const allMemberIds = [...new Set([user.id, ...memberIds])];
@@ -69,6 +70,7 @@ export async function createConversation(req: Request, res: Response): Promise<v
     data: {
       name: isGroup ? name : null,
       is_group: isGroup ?? false,
+      conv_type: conv_type || 'direct',
       created_by: user.id,
       members: {
         create: allMemberIds.map((id) => ({
